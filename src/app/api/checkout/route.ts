@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 
 export async function POST(request: Request) {
   try {
     const { items } = await request.json()
     if (!items || items.length === 0) return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
 
+    const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: items.map((item: { id: string; name: string; price: number; quantity: number }) => ({
