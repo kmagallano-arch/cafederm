@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import styles from './admin.module.css'
+import { defaultContent } from '@/lib/content'
+import type { SiteContent } from '@/lib/content'
+
+// ─── Product types ───────────────────────────────────────────────
 
 interface DbProduct {
   id: string
@@ -61,6 +65,24 @@ function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
 }
 
+// ─── Content section config ──────────────────────────────────────
+
+type SectionKey = keyof SiteContent
+
+const sectionLabels: Record<SectionKey, string> = {
+  announcement: 'Announcement Bar',
+  hero: 'Hero',
+  marquee: 'Marquee',
+  featuredBanner: 'Featured Banner',
+  about: 'About',
+  mediaGrid: 'Media Grid',
+  footer: 'Footer',
+}
+
+const sectionOrder: SectionKey[] = ['announcement', 'hero', 'marquee', 'featuredBanner', 'about', 'mediaGrid', 'footer']
+
+// ─── Main component ─────────────────────────────────────────────
+
 export default function AdminClient() {
   const [authenticated, setAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
@@ -68,16 +90,26 @@ export default function AdminClient() {
   const [loginLoading, setLoginLoading] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'products' | 'content'>('products')
+
+  // Product state
   const [products, setProducts] = useState<DbProduct[]>([])
   const [loading, setLoading] = useState(false)
-
   const [showModal, setShowModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null)
   const [form, setForm] = useState<FormData>(emptyForm)
   const [saving, setSaving] = useState(false)
-
   const [deleteTarget, setDeleteTarget] = useState<DbProduct | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  // Content state
+  const [contentData, setContentData] = useState<SiteContent>({ ...defaultContent })
+  const [contentLoading, setContentLoading] = useState(false)
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
+  const [savingSection, setSavingSection] = useState<string | null>(null)
+  const [savedSection, setSavedSection] = useState<string | null>(null)
+  const [newMarqueeItem, setNewMarqueeItem] = useState('')
 
   // Check session on mount
   useEffect(() => {
@@ -104,11 +136,39 @@ export default function AdminClient() {
     }
   }, [])
 
+  // Fetch content
+  const fetchContent = useCallback(async () => {
+    setContentLoading(true)
+    try {
+      const res = await fetch('/api/admin/content')
+      if (res.ok) {
+        const data = await res.json()
+        const merged = { ...defaultContent }
+        for (const key of sectionOrder) {
+          if (data[key]) {
+            (merged as any)[key] = { ...(merged as any)[key], ...data[key] }
+          }
+        }
+        setContentData(merged)
+      }
+    } catch {
+      // use defaults
+    } finally {
+      setContentLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     if (authenticated) {
       fetchProducts()
     }
   }, [authenticated, fetchProducts])
+
+  useEffect(() => {
+    if (authenticated && activeTab === 'content') {
+      fetchContent()
+    }
+  }, [authenticated, activeTab, fetchContent])
 
   // Login handler
   async function handleLogin(e: React.FormEvent) {
@@ -140,7 +200,8 @@ export default function AdminClient() {
     setPassword('')
   }
 
-  // Form helpers
+  // ─── Product form helpers ─────────────────────────────────────
+
   function openAddModal() {
     setEditingProduct(null)
     setForm(emptyForm)
@@ -174,7 +235,6 @@ export default function AdminClient() {
   function updateForm(field: keyof FormData, value: string | boolean) {
     setForm(prev => {
       const next = { ...prev, [field]: value }
-      // Auto-generate slug from name
       if (field === 'name' && typeof value === 'string' && !editingProduct) {
         next.slug = slugify(value)
       }
@@ -271,7 +331,322 @@ export default function AdminClient() {
     }
   }
 
-  // --- Renders ---
+  // ─── Content helpers ──────────────────────────────────────────
+
+  function toggleSection(key: string) {
+    setOpenSections(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  function updateContent<K extends SectionKey>(section: K, field: string, value: any) {
+    setContentData(prev => ({
+      ...prev,
+      [section]: { ...prev[section], [field]: value },
+    }))
+  }
+
+  function updateNestedContent<K extends SectionKey>(section: K, path: string[], value: any) {
+    setContentData(prev => {
+      const sectionData = { ...(prev[section] as any) }
+      let obj = sectionData
+      for (let i = 0; i < path.length - 1; i++) {
+        obj[path[i]] = { ...obj[path[i]] }
+        obj = obj[path[i]]
+      }
+      obj[path[path.length - 1]] = value
+      return { ...prev, [section]: sectionData }
+    })
+  }
+
+  async function saveSection(section: SectionKey) {
+    setSavingSection(section)
+    setSavedSection(null)
+    try {
+      const res = await fetch('/api/admin/content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section, data: contentData[section] }),
+      })
+      if (res.ok) {
+        setSavedSection(section)
+        setTimeout(() => setSavedSection(null), 2000)
+      } else {
+        const err = await res.json()
+        alert(`Error saving: ${err.error}`)
+      }
+    } catch {
+      alert('Network error')
+    } finally {
+      setSavingSection(null)
+    }
+  }
+
+  // ─── Render helpers ───────────────────────────────────────────
+
+  function renderInput(label: string, value: string, onChange: (v: string) => void) {
+    return (
+      <div className={styles.formGroup}>
+        <label className={styles.formLabel}>{label}</label>
+        <input className={styles.formInput} type="text" value={value} onChange={e => onChange(e.target.value)} />
+      </div>
+    )
+  }
+
+  function renderTextarea(label: string, value: string, onChange: (v: string) => void) {
+    return (
+      <div className={styles.formGroup}>
+        <label className={styles.formLabel}>{label}</label>
+        <textarea className={styles.formTextarea} value={value} onChange={e => onChange(e.target.value)} />
+      </div>
+    )
+  }
+
+  function renderToggle(label: string, value: boolean, onChange: (v: boolean) => void) {
+    return (
+      <div className={styles.toggleRow}>
+        <button
+          type="button"
+          className={`${styles.toggle} ${value ? styles.toggleOn : ''}`}
+          onClick={() => onChange(!value)}
+        />
+        <span className={styles.toggleLabel}>{label}</span>
+      </div>
+    )
+  }
+
+  function renderSaveButton(section: SectionKey) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
+        <button
+          className={styles.sectionSaveBtn}
+          onClick={() => saveSection(section)}
+          disabled={savingSection === section}
+        >
+          {savingSection === section ? 'Saving...' : 'Save'}
+        </button>
+        {savedSection === section && <span className={styles.savedMessage}>Saved!</span>}
+      </div>
+    )
+  }
+
+  // ─── Content section forms ────────────────────────────────────
+
+  function renderAnnouncementForm() {
+    const d = contentData.announcement
+    return (
+      <div className={styles.sectionForm}>
+        {renderInput('Announcement Text', d.text, v => updateContent('announcement', 'text', v))}
+        {renderToggle('Enabled', d.enabled, v => updateContent('announcement', 'enabled', v))}
+        {renderSaveButton('announcement')}
+      </div>
+    )
+  }
+
+  function renderHeroForm() {
+    const d = contentData.hero
+    return (
+      <div className={styles.sectionForm}>
+        {renderInput('Label', d.label, v => updateContent('hero', 'label', v))}
+        {renderTextarea('Title (use \\n for line breaks)', d.title, v => updateContent('hero', 'title', v))}
+        {renderInput('Subtitle', d.subtitle, v => updateContent('hero', 'subtitle', v))}
+        <div className={styles.formRow}>
+          {renderInput('Button Text', d.buttonText, v => updateContent('hero', 'buttonText', v))}
+          {renderInput('Button Link', d.buttonLink, v => updateContent('hero', 'buttonLink', v))}
+        </div>
+        {renderInput('Background Image URL', d.backgroundImage, v => updateContent('hero', 'backgroundImage', v))}
+        {renderSaveButton('hero')}
+      </div>
+    )
+  }
+
+  function renderMarqueeForm() {
+    const d = contentData.marquee
+    return (
+      <div className={styles.sectionForm}>
+        {renderToggle('Enabled', d.enabled, v => updateContent('marquee', 'enabled', v))}
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Marquee Items</label>
+          <div className={styles.contentTagList}>
+            {d.items.map((item, i) => (
+              <span key={i} className={styles.contentTag}>
+                {item}
+                <button
+                  className={styles.contentTagRemove}
+                  onClick={() => {
+                    const next = [...d.items]
+                    next.splice(i, 1)
+                    updateContent('marquee', 'items', next)
+                  }}
+                >
+                  &times;
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className={styles.addItemRow}>
+            <input
+              className={styles.formInput}
+              type="text"
+              placeholder="Add new item..."
+              value={newMarqueeItem}
+              onChange={e => setNewMarqueeItem(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && newMarqueeItem.trim()) {
+                  e.preventDefault()
+                  updateContent('marquee', 'items', [...d.items, newMarqueeItem.trim()])
+                  setNewMarqueeItem('')
+                }
+              }}
+            />
+            <button
+              className={styles.addItemBtn}
+              onClick={() => {
+                if (newMarqueeItem.trim()) {
+                  updateContent('marquee', 'items', [...d.items, newMarqueeItem.trim()])
+                  setNewMarqueeItem('')
+                }
+              }}
+            >
+              + Add
+            </button>
+          </div>
+        </div>
+        {renderSaveButton('marquee')}
+      </div>
+    )
+  }
+
+  function renderFeaturedBannerForm() {
+    const d = contentData.featuredBanner
+    return (
+      <div className={styles.sectionForm}>
+        {renderInput('Label', d.label, v => updateContent('featuredBanner', 'label', v))}
+        {renderTextarea('Title (use \\n for line breaks)', d.title, v => updateContent('featuredBanner', 'title', v))}
+        {renderTextarea('Subtitle', d.subtitle, v => updateContent('featuredBanner', 'subtitle', v))}
+        <div className={styles.formRow}>
+          {renderInput('Button Text', d.buttonText, v => updateContent('featuredBanner', 'buttonText', v))}
+          {renderInput('Button Link', d.buttonLink, v => updateContent('featuredBanner', 'buttonLink', v))}
+        </div>
+        {renderInput('Product Image URL', d.productImage, v => updateContent('featuredBanner', 'productImage', v))}
+        <div className={styles.formRow}>
+          {renderInput('Product Name', d.productName, v => updateContent('featuredBanner', 'productName', v))}
+          {renderInput('Product Price', d.productPrice, v => updateContent('featuredBanner', 'productPrice', v))}
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Features</label>
+          {d.features.map((feat, i) => (
+            <div key={i} className={styles.featureRow}>
+              <input
+                className={styles.formInput}
+                type="text"
+                value={feat.icon}
+                onChange={e => {
+                  const next = [...d.features]
+                  next[i] = { ...next[i], icon: e.target.value }
+                  updateContent('featuredBanner', 'features', next)
+                }}
+                placeholder="Icon"
+              />
+              <input
+                className={styles.formInput}
+                type="text"
+                value={feat.label}
+                onChange={e => {
+                  const next = [...d.features]
+                  next[i] = { ...next[i], label: e.target.value }
+                  updateContent('featuredBanner', 'features', next)
+                }}
+                placeholder="Label"
+              />
+              <button
+                className={styles.featureRemoveBtn}
+                onClick={() => {
+                  const next = [...d.features]
+                  next.splice(i, 1)
+                  updateContent('featuredBanner', 'features', next)
+                }}
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+          <button
+            className={styles.addItemBtn}
+            onClick={() => {
+              updateContent('featuredBanner', 'features', [...d.features, { icon: '', label: '' }])
+            }}
+          >
+            + Add Feature
+          </button>
+        </div>
+        {renderSaveButton('featuredBanner')}
+      </div>
+    )
+  }
+
+  function renderAboutForm() {
+    const d = contentData.about
+    return (
+      <div className={styles.sectionForm}>
+        {renderInput('Label', d.label, v => updateContent('about', 'label', v))}
+        {renderTextarea('Title (use \\n for line breaks)', d.title, v => updateContent('about', 'title', v))}
+        <div className={styles.formRow}>
+          {renderInput('Button Text', d.buttonText, v => updateContent('about', 'buttonText', v))}
+          {renderInput('Button Link', d.buttonLink, v => updateContent('about', 'buttonLink', v))}
+        </div>
+        {renderSaveButton('about')}
+      </div>
+    )
+  }
+
+  function renderMediaGridForm() {
+    const d = contentData.mediaGrid
+    return (
+      <div className={styles.sectionForm}>
+        <div className={styles.subSectionLabel}>Left Card</div>
+        {renderInput('Label', d.left.label, v => updateNestedContent('mediaGrid', ['left', 'label'], v))}
+        {renderTextarea('Title', d.left.title, v => updateNestedContent('mediaGrid', ['left', 'title'], v))}
+        {renderInput('Subtitle', d.left.subtitle, v => updateNestedContent('mediaGrid', ['left', 'subtitle'], v))}
+        <div className={styles.formRow}>
+          {renderInput('Button Text', d.left.buttonText, v => updateNestedContent('mediaGrid', ['left', 'buttonText'], v))}
+          {renderInput('Button Link', d.left.buttonLink, v => updateNestedContent('mediaGrid', ['left', 'buttonLink'], v))}
+        </div>
+
+        <div className={styles.subSectionLabel}>Right Card</div>
+        {renderInput('Label', d.right.label, v => updateNestedContent('mediaGrid', ['right', 'label'], v))}
+        {renderTextarea('Title', d.right.title, v => updateNestedContent('mediaGrid', ['right', 'title'], v))}
+        {renderInput('Subtitle', d.right.subtitle, v => updateNestedContent('mediaGrid', ['right', 'subtitle'], v))}
+        <div className={styles.formRow}>
+          {renderInput('Button Text', d.right.buttonText, v => updateNestedContent('mediaGrid', ['right', 'buttonText'], v))}
+          {renderInput('Button Link', d.right.buttonLink, v => updateNestedContent('mediaGrid', ['right', 'buttonLink'], v))}
+        </div>
+        {renderSaveButton('mediaGrid')}
+      </div>
+    )
+  }
+
+  function renderFooterForm() {
+    const d = contentData.footer
+    return (
+      <div className={styles.sectionForm}>
+        {renderInput('Newsletter Title', d.newsletterTitle, v => updateContent('footer', 'newsletterTitle', v))}
+        {renderTextarea('Newsletter Text', d.newsletterText, v => updateContent('footer', 'newsletterText', v))}
+        {renderSaveButton('footer')}
+      </div>
+    )
+  }
+
+  const sectionRenderers: Record<SectionKey, () => JSX.Element> = {
+    announcement: renderAnnouncementForm,
+    hero: renderHeroForm,
+    marquee: renderMarqueeForm,
+    featuredBanner: renderFeaturedBannerForm,
+    about: renderAboutForm,
+    mediaGrid: renderMediaGridForm,
+    footer: renderFooterForm,
+  }
+
+  // ─── Renders ──────────────────────────────────────────────────
 
   if (checkingSession) {
     return (
@@ -318,78 +693,131 @@ export default function AdminClient() {
         </button>
       </div>
 
-      {/* Content */}
-      <div className={styles.content}>
-        <div className={styles.toolbar}>
-          <h2 className={styles.toolbarTitle}>Products</h2>
-          <button className={styles.addBtn} onClick={openAddModal}>
-            + Add Product
+      {/* Tabs */}
+      <div style={{ padding: '0 1.5rem' }}>
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${activeTab === 'products' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('products')}
+          >
+            Products
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'content' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('content')}
+          >
+            Page Content
           </button>
         </div>
+      </div>
 
-        {loading ? (
-          <div className={styles.loading}>Loading products...</div>
-        ) : products.length === 0 ? (
-          <div className={styles.emptyState}>
-            No products found. Add your first product to get started.
-          </div>
-        ) : (
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th className={styles.th}>Name</th>
-                  <th className={styles.th}>Category</th>
-                  <th className={styles.th}>Price</th>
-                  <th className={styles.th}>Tags</th>
-                  <th className={styles.th}>Stock</th>
-                  <th className={styles.th}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map(product => (
-                  <tr key={product.id}>
-                    <td className={styles.td}>
-                      <span className={styles.productName}>{product.name}</span>
-                    </td>
-                    <td className={styles.td}>
-                      <span className={styles.badge}>{product.category}</span>
-                    </td>
-                    <td className={styles.td}>
-                      {formatPrice(product.price)}
-                      {product.compare_at_price && (
-                        <span style={{ color: 'var(--gray)', textDecoration: 'line-through', marginLeft: 6, fontSize: '0.8em' }}>
-                          {formatPrice(product.compare_at_price)}
-                        </span>
-                      )}
-                    </td>
-                    <td className={styles.td}>
-                      <div className={styles.tagList}>
-                        {product.tags.map(tag => (
-                          <span key={tag} className={styles.tag}>{tag}</span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className={styles.td}>
-                      <span className={`${styles.stockBadge} ${product.in_stock ? styles.stockIn : styles.stockOut}`}>
-                        {product.in_stock ? 'In Stock' : 'Out of Stock'}
-                      </span>
-                    </td>
-                    <td className={styles.td}>
-                      <div className={styles.actions}>
-                        <button className={styles.editBtn} onClick={() => openEditModal(product)}>
-                          Edit
-                        </button>
-                        <button className={styles.deleteBtn} onClick={() => setDeleteTarget(product)}>
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* Content area */}
+      <div className={styles.content}>
+        {activeTab === 'products' && (
+          <>
+            <div className={styles.toolbar}>
+              <h2 className={styles.toolbarTitle}>Products</h2>
+              <button className={styles.addBtn} onClick={openAddModal}>
+                + Add Product
+              </button>
+            </div>
+
+            {loading ? (
+              <div className={styles.loading}>Loading products...</div>
+            ) : products.length === 0 ? (
+              <div className={styles.emptyState}>
+                No products found. Add your first product to get started.
+              </div>
+            ) : (
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th className={styles.th}>Name</th>
+                      <th className={styles.th}>Category</th>
+                      <th className={styles.th}>Price</th>
+                      <th className={styles.th}>Tags</th>
+                      <th className={styles.th}>Stock</th>
+                      <th className={styles.th}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map(product => (
+                      <tr key={product.id}>
+                        <td className={styles.td}>
+                          <span className={styles.productName}>{product.name}</span>
+                        </td>
+                        <td className={styles.td}>
+                          <span className={styles.badge}>{product.category}</span>
+                        </td>
+                        <td className={styles.td}>
+                          {formatPrice(product.price)}
+                          {product.compare_at_price && (
+                            <span style={{ color: 'var(--gray)', textDecoration: 'line-through', marginLeft: 6, fontSize: '0.8em' }}>
+                              {formatPrice(product.compare_at_price)}
+                            </span>
+                          )}
+                        </td>
+                        <td className={styles.td}>
+                          <div className={styles.tagList}>
+                            {product.tags.map(tag => (
+                              <span key={tag} className={styles.tag}>{tag}</span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className={styles.td}>
+                          <span className={`${styles.stockBadge} ${product.in_stock ? styles.stockIn : styles.stockOut}`}>
+                            {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                          </span>
+                        </td>
+                        <td className={styles.td}>
+                          <div className={styles.actions}>
+                            <button className={styles.editBtn} onClick={() => openEditModal(product)}>
+                              Edit
+                            </button>
+                            <button className={styles.deleteBtn} onClick={() => setDeleteTarget(product)}>
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'content' && (
+          <>
+            <div className={styles.toolbar}>
+              <h2 className={styles.toolbarTitle}>Page Content</h2>
+            </div>
+
+            {contentLoading ? (
+              <div className={styles.loading}>Loading content...</div>
+            ) : (
+              sectionOrder.map(key => (
+                <div key={key} className={styles.accordion}>
+                  <button
+                    className={styles.accordionHeader}
+                    onClick={() => toggleSection(key)}
+                  >
+                    {sectionLabels[key]}
+                    <span className={`${styles.accordionArrow} ${openSections[key] ? styles.accordionArrowOpen : ''}`}>
+                      &#9660;
+                    </span>
+                  </button>
+                  {openSections[key] && (
+                    <div className={styles.accordionBody}>
+                      {sectionRenderers[key]()}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </>
         )}
       </div>
 

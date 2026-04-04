@@ -1,24 +1,46 @@
 import Link from 'next/link'
 import styles from './MediaGrid.module.css'
+import type { SiteContent } from '@/lib/content'
 
-export default function MediaGrid() {
+interface MediaGridProps {
+  content: SiteContent['mediaGrid']
+}
+
+export default function MediaGrid({ content }: MediaGridProps) {
+  const leftTitleParts = content.left.title.split('\n')
+  const rightTitleParts = content.right.title.split('\n')
+
   return (
     <section className={styles.section}>
       <div className={styles.grid}>
-        <Link href="/collections/bundles">
+        <Link href={content.left.buttonLink}>
           <div className={`${styles.card} ${styles.cardLight}`}>
             <div className={styles.cardCircle} />
-            <span className={styles.cardLabel}>Exclusive Offer</span>
-            <h3 className={styles.cardTitle}>Build Your<br />Custom Bundle</h3>
-            <span className={styles.cardLink}>Shop Bundles &rarr;</span>
+            <span className={styles.cardLabel}>{content.left.label}</span>
+            <h3 className={styles.cardTitle}>
+              {leftTitleParts.map((part, i) => (
+                <span key={i}>
+                  {part}
+                  {i < leftTitleParts.length - 1 && <br />}
+                </span>
+              ))}
+            </h3>
+            <span className={styles.cardLink}>{content.left.buttonText} &rarr;</span>
           </div>
         </Link>
-        <Link href="/rewards">
+        <Link href={content.right.buttonLink}>
           <div className={`${styles.card} ${styles.cardDark}`}>
             <div className={styles.cardCircle} />
-            <span className={styles.cardLabel}>Rewards Program</span>
-            <h3 className={styles.cardTitle}>The CafeDerm<br />Loyalty Club</h3>
-            <span className={styles.cardLink}>Learn More &rarr;</span>
+            <span className={styles.cardLabel}>{content.right.label}</span>
+            <h3 className={styles.cardTitle}>
+              {rightTitleParts.map((part, i) => (
+                <span key={i}>
+                  {part}
+                  {i < rightTitleParts.length - 1 && <br />}
+                </span>
+              ))}
+            </h3>
+            <span className={styles.cardLink}>{content.right.buttonText} &rarr;</span>
           </div>
         </Link>
       </div>

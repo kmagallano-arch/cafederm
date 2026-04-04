@@ -7,19 +7,24 @@ import ShopBySection from '@/components/home/ShopBySection'
 import AboutSection from '@/components/home/AboutSection'
 import MediaGrid from '@/components/home/MediaGrid'
 import { getProductsByCategory } from '@/data/products'
+import { fetchSiteContent } from '@/lib/content'
 
-export default function Home() {
+export const revalidate = 60 // revalidate every 60 seconds
+
+export default async function Home() {
   const trending = getProductsByCategory('best-sellers')
+  const content = await fetchSiteContent()
+
   return (
     <>
-      <Hero />
-      <Marquee />
+      <Hero content={content.hero} />
+      <Marquee content={content.marquee} />
       <CollectionCards />
       <ProductGrid title="Trending Now" products={trending} />
-      <FeaturedBanner />
+      <FeaturedBanner content={content.featuredBanner} />
       <ShopBySection />
-      <AboutSection />
-      <MediaGrid />
+      <AboutSection content={content.about} />
+      <MediaGrid content={content.mediaGrid} />
     </>
   )
 }

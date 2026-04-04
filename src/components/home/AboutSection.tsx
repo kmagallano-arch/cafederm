@@ -1,16 +1,28 @@
 import Button from '@/components/shared/Button'
 import styles from './AboutSection.module.css'
+import type { SiteContent } from '@/lib/content'
 
-export default function AboutSection() {
+interface AboutSectionProps {
+  content: SiteContent['about']
+}
+
+export default function AboutSection({ content }: AboutSectionProps) {
+  const titleParts = content.title.split('\n')
+
   return (
     <section className={styles.section}>
       <div className={styles.bgCircle} />
       <div className={styles.inner}>
-        <p className={styles.label}>About CafeDerm</p>
+        <p className={styles.label}>{content.label}</p>
         <h2 className={styles.title}>
-          We bring premium skincare to every one, every where, every day.
+          {titleParts.map((part, i) => (
+            <span key={i}>
+              {part}
+              {i < titleParts.length - 1 && <br />}
+            </span>
+          ))}
         </h2>
-        <Button href="/about" variant="outline">Learn More</Button>
+        <Button href={content.buttonLink} variant="outline">{content.buttonText}</Button>
       </div>
     </section>
   )

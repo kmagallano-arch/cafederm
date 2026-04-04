@@ -1,17 +1,16 @@
 import styles from './Marquee.module.css'
+import type { SiteContent } from '@/lib/content'
 
-const phrases = [
-  'Premium Skincare, Real Results',
-  'Dermatologist Tested',
-  'Cruelty Free',
-  'Clean Ingredients',
-  'Premium Skincare, Real Results',
-  'Dermatologist Tested',
-  'Cruelty Free',
-  'Clean Ingredients',
-]
+interface MarqueeProps {
+  content: SiteContent['marquee']
+}
 
-export default function Marquee() {
+export default function Marquee({ content }: MarqueeProps) {
+  if (!content.enabled) return null
+
+  // Double the items for seamless scrolling, then duplicate again for the CSS animation
+  const phrases = [...content.items, ...content.items]
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.track}>
