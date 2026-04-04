@@ -1,4 +1,5 @@
 import { Product } from '@/types'
+import { supabase } from '@/lib/supabase'
 
 export const products: Product[] = [
   {
@@ -227,4 +228,66 @@ export function getProductsByCategory(category: string): Product[] {
 
 export function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`
+}
+
+// Database types (snake_case from Supabase)
+interface DbProduct {
+  id: string
+  name: string
+  slug: string
+  description: string
+  price: number
+  compare_at_price: number | null
+  images: string[]
+  category: 'face-care' | 'body-care' | 'bundles'
+  tags: string[]
+  rating: number
+  review_count: number
+  in_stock: boolean
+}
+
+function dbToProduct(db: DbProduct): Product {
+  return {
+    id: db.id,
+    name: db.name,
+    slug: db.slug,
+    description: db.description,
+    price: db.price,
+    compareAtPrice: db.compare_at_price ?? undefined,
+    images: db.images,
+    category: db.category,
+    tags: db.tags,
+    rating: db.rating,
+    reviewCount: db.review_count,
+    inStock: db.in_stock,
+  }
+}
+
+export async function fetchProducts(): Promise<Product[]> {
+  const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false })
+  if (error || !data) return products // fallback to static
+  return data.map(dbToProduct)
+}
+
+export async function fetchProductBySlug(slug: string): Promise<Product | undefined> {
+  const { data, error } = await supabase.from('products').select('*').eq('slug', slug).single()
+  if (error || !data) return getProductBySlug(slug) // fallback to static
+  return dbToProduct(data)
+}
+
+export async function fetchProductsByCategory(category: string): Promise<Product[]> {
+  if (category === 'all') return fetchProducts()
+  if (category === 'best-sellers') {
+    const { data, error } = await supabase.from('products').select('*').contains('tags', ['best-seller'])
+    if (error || !data) return getProductsByCategory(category)
+    return data.map(dbToProduct)
+  }
+  if (category === 'new-arrivals') {
+    const { data, error } = await supabase.from('products').select('*').contains('tags', ['new'])
+    if (error || !data) return getProductsByCategory(category)
+    return data.map(dbToProduct)
+  }
+  const { data, error } = await supabase.from('products').select('*').eq('category', category)
+  if (error || !data) return getProductsByCategory(category)
+  return data.map(dbToProduct)
 }
