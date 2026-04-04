@@ -1,0 +1,97 @@
+.section {
+  padding: 0 var(--container-padding) 60px;
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.card {
+  position: relative;
+  padding: 60px 48px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+}
+.cardLight {
+  background: linear-gradient(135deg, var(--cream) 0%, var(--cream-dark) 100%);
+}
+.cardDark {
+  background: var(--brown-dark);
+}
+.cardCircle {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.cardLight .cardCircle {
+  background: rgba(184, 146, 106, 0.1);
+}
+.cardDark .cardCircle {
+  background: rgba(255, 255, 255, 0.05);
+}
+.cardLabel {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.cardLight .cardLabel {
+  color: var(--brown);
+}
+.cardDark .cardLabel {
+  color: var(--brown-light);
+}
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.25;
+  margin-bottom: 24px;
+}
+.cardLight .cardTitle {
+  color: var(--brown-dark);
+}
+.cardDark .cardTitle {
+  color: var(--cream);
+}
+.cardLink {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+.cardLink:hover {
+  opacity: 0.7;
+}
+.cardLight .cardLink {
+  color: var(--brown-dark);
+}
+.cardDark .cardLink {
+  color: var(--cream);
+}
+@media (max-width: 699px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 40px 32px;
+    min-height: 240px;
+  }
+  .cardTitle { font-size: 24px; }
+}

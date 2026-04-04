@@ -1,0 +1,12 @@
+.hero { background: var(--cream); text-align: center; padding: 80px var(--container-padding) 60px; }
+.title { font-family: var(--font-heading); font-size: clamp(32px, 4vw, 52px); font-weight: 400; color: var(--brown-dark); margin-bottom: 16px; }
+.subtitle { font-size: 15px; color: var(--brown); max-width: 550px; margin: 0 auto; line-height: 1.7; }
+.section { max-width: 800px; margin: 0 auto; padding: 60px var(--container-padding); }
+.sectionTitle { font-family: var(--font-heading); font-size: 28px; color: var(--brown-dark); margin-bottom: 16px; }
+.text { font-size: 14px; line-height: 1.8; color: var(--brown); margin-bottom: 24px; }
+.values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; max-width: 900px; margin: 0 auto; padding: 0 var(--container-padding) 60px; }
+.value { text-align: center; padding: 32px 24px; background: var(--cream); }
+.valueIcon { font-size: 28px; margin-bottom: 12px; }
+.valueTitle { font-family: var(--font-heading); font-size: 20px; color: var(--brown-dark); margin-bottom: 8px; }
+.valueText { font-size: 13px; color: var(--brown); line-height: 1.6; }
+@media (max-width: 699px) { .values { grid-template-columns: 1fr; } }

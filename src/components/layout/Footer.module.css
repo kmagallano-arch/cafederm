@@ -1,0 +1,16 @@
+.footer { background: var(--cream); padding: 60px var(--container-padding) 30px; border-top: 1px solid var(--cream-dark); }
+.grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 40px; }
+.newsletterTitle { font-family: var(--font-heading); font-size: 24px; margin-bottom: 8px; color: var(--brown-dark); }
+.newsletterText { font-size: 13px; color: var(--brown); margin-bottom: 16px; line-height: 1.5; }
+.emailRow { display: flex; }
+.emailInput { flex: 1; padding: 12px 16px; border: 1px solid var(--cream-dark); background: var(--white); font-size: 13px; font-family: var(--font-body); outline: none; }
+.emailBtn { padding: 12px 24px; background: var(--brown-dark); color: var(--cream); border: none; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-family: var(--font-body); font-weight: 500; cursor: pointer; }
+.linksTitle { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; font-weight: 600; color: var(--brown-dark); }
+.linkItem { margin-bottom: 10px; }
+.link { font-size: 13px; color: var(--brown); transition: color 0.2s; }
+.link:hover { color: var(--brown-dark); }
+.bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--cream-dark); font-size: 12px; color: var(--gray); }
+.social { display: flex; gap: 16px; }
+.socialLink { color: var(--brown); font-size: 13px; transition: color 0.2s; }
+.socialLink:hover { color: var(--brown-dark); }
+@media (max-width: 699px) { .grid { grid-template-columns: 1fr; gap: 32px; } .bottom { flex-direction: column; gap: 16px; text-align: center; } }

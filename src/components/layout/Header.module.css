@@ -1,0 +1,10 @@
+.header { display: flex; align-items: center; justify-content: space-between; padding: 16px var(--container-padding); background: var(--white); border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; }
+.nav { display: flex; gap: 32px; }
+.navLink { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; transition: color 0.2s; }
+.navLink:hover { color: var(--brown); }
+.logo { font-family: var(--font-heading); font-size: 28px; font-weight: 500; letter-spacing: 3px; color: var(--brown-dark); }
+.icons { display: flex; gap: 20px; align-items: center; }
+.iconBtn { background: none; border: none; font-size: 13px; cursor: pointer; color: var(--black); font-family: var(--font-body); display: flex; align-items: center; gap: 4px; }
+.cartCount { font-size: 11px; background: var(--brown-dark); color: var(--cream); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+.mobileMenuBtn { display: none; background: none; border: none; font-size: 24px; cursor: pointer; }
+@media (max-width: 699px) { .nav { display: none; } .mobileMenuBtn { display: block; } .logo { font-size: 22px; } }

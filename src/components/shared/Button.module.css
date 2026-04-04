@@ -1,0 +1,7 @@
+.btn { display: inline-block; padding: 14px 40px; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 600; font-family: var(--font-body); cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent; text-align: center; }
+.dark { background: var(--brown-dark); color: var(--cream); border-color: var(--brown-dark); }
+.dark:hover { background: var(--brown); border-color: var(--brown); }
+.outline { background: transparent; color: var(--brown-dark); border-color: var(--brown-dark); }
+.outline:hover { background: var(--brown-dark); color: var(--cream); }
+.outlineLight { background: transparent; color: var(--cream); border-color: var(--cream); }
+.outlineLight:hover { background: var(--cream); color: var(--brown-dark); }

@@ -1,0 +1,7 @@
+.page { max-width: 600px; margin: 0 auto; padding: 80px var(--container-padding); text-align: center; }
+.icon { font-size: 48px; margin-bottom: 24px; }
+.title { font-family: var(--font-heading); font-size: 32px; color: var(--brown-dark); margin-bottom: 12px; }
+.subtitle { font-size: 14px; color: var(--brown); margin-bottom: 40px; line-height: 1.6; }
+.details { text-align: left; padding: 24px; background: var(--cream); margin-bottom: 32px; }
+.detailRow { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid var(--cream-dark); }
+.detailRow:last-child { border-bottom: none; font-weight: 600; padding-top: 12px; }

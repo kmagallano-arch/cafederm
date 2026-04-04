@@ -1,0 +1,15 @@
+.page { max-width: var(--container-max); margin: 0 auto; padding: 60px var(--container-padding); display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+.gallery { aspect-ratio: 1; background: var(--cream); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-size: 24px; color: var(--brown-light); }
+.info { display: flex; flex-direction: column; justify-content: center; }
+.badge { display: inline-block; background: var(--brown-dark); color: var(--cream); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; font-weight: 600; margin-bottom: 16px; align-self: flex-start; }
+.title { font-family: var(--font-heading); font-size: clamp(28px, 3vw, 38px); font-weight: 400; color: var(--brown-dark); margin-bottom: 8px; line-height: 1.2; }
+.priceRow { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+.price { font-size: 20px; color: var(--brown-dark); font-weight: 500; }
+.comparePrice { font-size: 16px; color: var(--gray); text-decoration: line-through; }
+.stars { font-size: 14px; color: var(--brown-light); margin-bottom: 24px; }
+.description { font-size: 14px; line-height: 1.7; color: var(--brown); margin-bottom: 32px; }
+.addToCart { width: 100%; max-width: 400px; padding: 18px; background: var(--brown-dark); color: var(--cream); border: none; font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 600; font-family: var(--font-body); cursor: pointer; transition: background 0.3s; margin-bottom: 16px; }
+.addToCart:hover { background: var(--brown); }
+.details { margin-top: 32px; padding-top: 24px; border-top: 1px solid #eee; }
+.detailItem { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--brown); margin-bottom: 8px; }
+@media (max-width: 699px) { .page { grid-template-columns: 1fr; gap: 32px; } }

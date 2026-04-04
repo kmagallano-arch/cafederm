@@ -1,0 +1,23 @@
+.wrapper {
+  background: var(--brown-dark);
+  overflow: hidden;
+  padding: 14px 0;
+}
+.track {
+  display: flex;
+  width: max-content;
+  animation: scroll 30s linear infinite;
+}
+.text {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--cream);
+  white-space: nowrap;
+  padding: 0 48px;
+  font-weight: 500;
+}
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
