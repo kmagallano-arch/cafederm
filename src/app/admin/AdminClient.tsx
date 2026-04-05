@@ -74,7 +74,7 @@ export default function AdminClient() {
   const [checkingSession, setCheckingSession] = useState(true)
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'products' | 'auto-import'>('products')
+  const [activeTab, setActiveTab] = useState<'products'>('products')
 
   // Product state
   const [products, setProducts] = useState<DbProduct[]>([])
@@ -408,12 +408,6 @@ export default function AdminClient() {
           >
             Products
           </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'auto-import' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('auto-import')}
-          >
-            Auto-Import
-          </button>
           <Link
             href="/admin/page-editor"
             className={styles.tab}
@@ -520,141 +514,6 @@ export default function AdminClient() {
           </>
         )}
 
-        {activeTab === 'auto-import' && (
-          <div className={styles.autoImportSection}>
-            <h2 className={styles.autoImportTitle}>Auto-Import from Alibaba</h2>
-            <p className={styles.autoImportSubtitle}>
-              Paste an Alibaba product URL below. The system will scrape all product data,
-              rewrite it for the CafeDerm brand using AI, recreate clean product images,
-              and create a complete product entry automatically.
-            </p>
-
-            <div className={styles.autoImportForm}>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Alibaba Product URL</label>
-                <input
-                  className={styles.formInput}
-                  type="url"
-                  placeholder="https://www.alibaba.com/product-detail/..."
-                  value={importUrl}
-                  onChange={e => setImportUrl(e.target.value)}
-                  disabled={importing}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Import Mode</label>
-                <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: 'var(--brown-dark)' }}>
-                    <input
-                      type="radio"
-                      name="importMode"
-                      checked={importMode === 'create'}
-                      onChange={() => { setImportMode('create'); setImportTargetProduct('') }}
-                      disabled={importing}
-                      style={{ accentColor: 'var(--brown-dark)' }}
-                    />
-                    Create New Product
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: 'var(--brown-dark)' }}>
-                    <input
-                      type="radio"
-                      name="importMode"
-                      checked={importMode === 'update'}
-                      onChange={() => setImportMode('update')}
-                      disabled={importing}
-                      style={{ accentColor: 'var(--brown-dark)' }}
-                    />
-                    Update Existing Product
-                  </label>
-                </div>
-              </div>
-
-              {importMode === 'update' && (
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Select Product to Update</label>
-                  <select
-                    className={styles.formSelect}
-                    value={importTargetProduct}
-                    onChange={e => setImportTargetProduct(e.target.value)}
-                    disabled={importing}
-                  >
-                    <option value="">-- Select a product --</option>
-                    {products.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Category</label>
-                <select
-                  className={styles.formSelect}
-                  value={importCategory}
-                  onChange={e => setImportCategory(e.target.value as 'face-care' | 'body-care' | 'bundles')}
-                  disabled={importing}
-                >
-                  <option value="face-care">Face Care</option>
-                  <option value="body-care">Body Care</option>
-                  <option value="bundles">Bundles</option>
-                </select>
-              </div>
-
-              <button
-                className={styles.autoImportBtn}
-                onClick={handleAutoImport}
-                disabled={importing || !importUrl.trim() || (importMode === 'update' && !importTargetProduct)}
-              >
-                {importing ? 'Importing...' : importMode === 'create' ? 'Import & Create Product' : 'Import & Update Product'}
-              </button>
-            </div>
-
-            {importing && importStep > 0 && (
-              <div className={styles.autoImportProgress}>
-                {[
-                  { step: 1, label: 'Scraping Alibaba page...' },
-                  { step: 2, label: 'Rewriting content for CafeDerm...' },
-                  { step: 3, label: 'Enhancing product images...' },
-                  { step: 4, label: 'Creating product...' },
-                ].map(({ step, label }) => (
-                  <div
-                    key={step}
-                    className={`${styles.autoImportStep} ${
-                      importStep === step ? styles.autoImportStepActive :
-                      importStep > step ? styles.autoImportStepDone : ''
-                    }`}
-                  >
-                    <span className={styles.autoImportStepIcon}>
-                      {importStep > step ? '\u2713' : importStep === step ? '\u25CB' : '\u2022'}
-                    </span>
-                    {label}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {importError && (
-              <div className={styles.autoImportError}>{importError}</div>
-            )}
-
-            {importResult && (
-              <div className={styles.autoImportResult}>
-                <h3 className={styles.autoImportResultTitle}>{importResult.name}</h3>
-                <p className={styles.autoImportResultMeta}>
-                  Price: ${(importResult.price / 100).toFixed(2)} &middot;{' '}
-                  {importResult.images.length} image{importResult.images.length !== 1 ? 's' : ''} imported
-                </p>
-                <Link
-                  href={`/admin/products/${importResult.slug}`}
-                  className={styles.autoImportResultLink}
-                >
-                  View in Editor &rarr;
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Add/Edit Modal */}

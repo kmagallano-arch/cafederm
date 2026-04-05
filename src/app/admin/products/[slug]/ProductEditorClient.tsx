@@ -307,11 +307,8 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
         if (pd.tags?.includes('best-seller')) setTagBestSeller(true)
       }
 
-      // Add imported images
-      if (data.images && data.images.length > 0) {
-        const newImages = data.images.map((img: string | { url: string }) => typeof img === 'string' ? img : img.url)
-        setImages(prev => [...prev.filter(u => u), ...newImages])
-      }
+      // Images are NOT imported from server (Alibaba blocks cloud servers)
+      // User pastes images manually with Cmd+V
     } catch (e) {
       setAlibabaError(e instanceof Error ? e.message : 'Import failed')
     }
@@ -521,7 +518,7 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
           {/* Alibaba Import — at the very top */}
           <div className={styles.alibabaImportSection}>
             <div className={styles.alibabaImportTitle}>Import from Alibaba</div>
-            <p className={styles.alibabaImportDesc}>Paste a product URL to auto-fill all fields</p>
+            <p className={styles.alibabaImportDesc}>Paste a product URL to auto-fill name, description, ingredients, and benefits. Copy images from the Alibaba page and paste here with Cmd+V.</p>
             <div className={styles.alibabaImportRow}>
               <input
                 type="url"
