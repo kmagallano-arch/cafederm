@@ -5,7 +5,7 @@ export const maxDuration = 300 // 5 minutes — this is a long process
 
 export async function POST(request: Request) {
   try {
-    const { url, category = 'face-care' } = await request.json()
+    const { url, category = 'face-care', mode = 'create', existingProductId } = await request.json()
     if (!url) return NextResponse.json({ error: 'No URL provided' }, { status: 400 })
 
     // Step 1: Scrape Alibaba page
@@ -29,11 +29,55 @@ export async function POST(request: Request) {
     const imageUrls = extractAlibabaImages(html)
     const enhancedImages = await enhanceImages(imageUrls.slice(0, 6), url)
 
-    // Step 5: Generate slug and ID
+    // Step 5: Handle create vs update mode
+    if (mode === 'update' && existingProductId) {
+      // Update existing product — merge new data into existing
+      const { data: existing, error: fetchErr } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', existingProductId)
+        .single()
+
+      if (fetchErr || !existing) {
+        return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+      }
+
+      const updates: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      }
+
+      // Only update fields that have new data
+      if (productData.name) updates.name = productData.name
+      if (productData.description) updates.description = productData.description
+      if (productData.price) updates.price = productData.price
+      if (productData.ingredients) updates.ingredients = productData.ingredients
+      if (productData.howToUse) updates.how_to_use = productData.howToUse
+      if (productData.keyBenefits?.length) updates.key_benefits = productData.keyBenefits
+      if (productData.recommendedFor?.length) updates.recommended_for = productData.recommendedFor
+      if (productData.tags?.length) updates.tags = productData.tags
+      if (productData.variants?.length) updates.variants = productData.variants
+      if (enhancedImages.length > 0) {
+        // Append new images to existing ones
+        const existingImages = existing.images || []
+        updates.images = [...existingImages, ...enhancedImages]
+      }
+      updates.category = category
+
+      const { data, error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', existingProductId)
+        .select()
+        .single()
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ product: data, slug: data.slug })
+    }
+
+    // Create new product
     const slug = productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
     const id = 'prod_' + slug.replace(/-/g, '_').slice(0, 30)
 
-    // Step 6: Compose final product
     const product = {
       id,
       name: productData.name,
@@ -58,7 +102,6 @@ export async function POST(request: Request) {
       ritual_product_ids: [],
     }
 
-    // Step 7: Insert into Supabase
     const { data, error } = await supabase.from('products').upsert(product).select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

@@ -288,8 +288,15 @@ export default function AdminClient() {
 
   // ─── Auto-import handler ───────────────────────────────────────
 
+  const [importMode, setImportMode] = useState<'create' | 'update'>('create')
+  const [importTargetProduct, setImportTargetProduct] = useState('')
+
   async function handleAutoImport() {
     if (!importUrl.trim()) return
+    if (importMode === 'update' && !importTargetProduct) {
+      setImportError('Please select a product to update')
+      return
+    }
     setImporting(true)
     setImportStep(1)
     setImportResult(null)
@@ -304,7 +311,12 @@ export default function AdminClient() {
       const res = await fetch('/api/admin/auto-import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: importUrl.trim(), category: importCategory }),
+        body: JSON.stringify({
+          url: importUrl.trim(),
+          category: importCategory,
+          mode: importMode,
+          existingProductId: importMode === 'update' ? importTargetProduct : undefined,
+        }),
         signal: AbortSignal.timeout(5 * 60 * 1000), // 5 minute timeout
       })
 
@@ -531,6 +543,51 @@ export default function AdminClient() {
               </div>
 
               <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Import Mode</label>
+                <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: 'var(--brown-dark)' }}>
+                    <input
+                      type="radio"
+                      name="importMode"
+                      checked={importMode === 'create'}
+                      onChange={() => { setImportMode('create'); setImportTargetProduct('') }}
+                      disabled={importing}
+                      style={{ accentColor: 'var(--brown-dark)' }}
+                    />
+                    Create New Product
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: 'var(--brown-dark)' }}>
+                    <input
+                      type="radio"
+                      name="importMode"
+                      checked={importMode === 'update'}
+                      onChange={() => setImportMode('update')}
+                      disabled={importing}
+                      style={{ accentColor: 'var(--brown-dark)' }}
+                    />
+                    Update Existing Product
+                  </label>
+                </div>
+              </div>
+
+              {importMode === 'update' && (
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Select Product to Update</label>
+                  <select
+                    className={styles.formSelect}
+                    value={importTargetProduct}
+                    onChange={e => setImportTargetProduct(e.target.value)}
+                    disabled={importing}
+                  >
+                    <option value="">-- Select a product --</option>
+                    {products.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Category</label>
                 <select
                   className={styles.formSelect}
@@ -547,9 +604,9 @@ export default function AdminClient() {
               <button
                 className={styles.autoImportBtn}
                 onClick={handleAutoImport}
-                disabled={importing || !importUrl.trim()}
+                disabled={importing || !importUrl.trim() || (importMode === 'update' && !importTargetProduct)}
               >
-                {importing ? 'Importing...' : 'Import & Create Product'}
+                {importing ? 'Importing...' : importMode === 'create' ? 'Import & Create Product' : 'Import & Update Product'}
               </button>
             </div>
 
