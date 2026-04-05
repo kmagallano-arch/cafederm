@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const base64 = buffer.toString('base64')
 
     // Send to Gemini to recreate a clean version
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${process.env.GEMINI_API_KEY}`
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${process.env.GEMINI_API_KEY}`
 
     const res = await fetch(geminiUrl, {
       method: 'POST',
