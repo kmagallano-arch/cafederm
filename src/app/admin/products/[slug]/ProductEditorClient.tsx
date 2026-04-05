@@ -279,11 +279,11 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
     setAlibabaImporting(true)
     setAlibabaError('')
     try {
-      const res = await fetch('/api/admin/import-alibaba', {
+      const res = await fetch('/api/admin/auto-import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: alibabaUrl }),
-        signal: AbortSignal.timeout(120000),
+        body: JSON.stringify({ url: alibabaUrl, category }),
+        signal: AbortSignal.timeout(300000),
       })
       const data = await res.json()
       if (data.error) {
@@ -292,8 +292,9 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
       }
 
       // Auto-fill all form fields from the imported data
-      if (data.productData) {
-        const pd = data.productData
+      // auto-import returns { product: {...}, slug }
+      const pd = data.product || data.productData
+      if (pd) {
         if (pd.name) {
           setName(pd.name)
           if (isNew) setFormSlug(slugify(pd.name))
@@ -301,14 +302,17 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
         if (pd.description) setDescription(pd.description)
         if (pd.price) setPriceDollars((pd.price / 100).toFixed(2))
         if (pd.ingredients) setIngredients(pd.ingredients)
+        if (pd.how_to_use) setHowToUse(pd.how_to_use)
         if (pd.howToUse) setHowToUse(pd.howToUse)
-        if (pd.keyBenefits) setKeyBenefits(pd.keyBenefits)
+        if (pd.key_benefits?.length) setKeyBenefits(pd.key_benefits)
+        if (pd.keyBenefits?.length) setKeyBenefits(pd.keyBenefits)
         if (pd.tags?.includes('new')) setTagNew(true)
         if (pd.tags?.includes('best-seller')) setTagBestSeller(true)
+        // Images from auto-import (if available)
+        if (pd.images?.length > 0) {
+          setImages(prev => [...prev.filter((u: string) => u), ...pd.images])
+        }
       }
-
-      // Images are NOT imported from server (Alibaba blocks cloud servers)
-      // User pastes images manually with Cmd+V
     } catch (e) {
       setAlibabaError(e instanceof Error ? e.message : 'Import failed')
     }
