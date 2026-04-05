@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         contents: [{
           parts: [
             {
-              text: 'Look at this product photo. Generate a new, clean, professional product photography image of the SAME exact product shown here. Requirements: clean white background, professional studio lighting, no text, no logos, no watermarks, no branding, no labels, no writing of any kind. Just the physical product itself, beautifully lit. Keep the exact same product shape, color, and design. High quality commercial product photography.',
+              text: 'Edit this product photo. Replace any visible brand name, logo, or supplier text on the product label with the brand name "CafeDerm" in an elegant, minimal serif font. Keep EVERYTHING else exactly the same — same bottle, same background, same styling, same decorative elements (leaves, coffee beans, etc). Only change the text on the label to say "CafeDerm" and keep the product type text (like "Eye Serum", "Face Cream" etc). The result should look like this is a CafeDerm branded product photo.',
             },
             {
               inline_data: { mime_type: 'image/jpeg', data: base64 },
