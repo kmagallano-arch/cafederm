@@ -22,6 +22,16 @@ interface DbProduct {
   key_benefits: string[]
   related_product_ids: string[]
   variants: { name: string; options: string[] }[]
+  recommended_for: string[]
+  awards: string
+  subscribe_discount: number
+  ritual_product_ids: string[]
+  trust_badges: { icon: string; label: string }[]
+  ingredient_images: { name: string; image: string; description: string; benefits: string[] }[]
+  brand_story_image: string
+  brand_story_title: string
+  brand_story_text: string
+  sample_reviews: { name: string; rating: number; date: string; text: string }[]
 }
 
 function slugify(text: string): string {
@@ -72,12 +82,29 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
   const [reviewCount, setReviewCount] = useState('0')
   const [images, setImages] = useState<string[]>([])
 
-  // New fields
+  // Product details fields
   const [ingredients, setIngredients] = useState('')
   const [howToUse, setHowToUse] = useState('')
   const [keyBenefits, setKeyBenefits] = useState<string[]>([])
   const [newBenefit, setNewBenefit] = useState('')
   const [relatedProductIds, setRelatedProductIds] = useState<string[]>([])
+  const [recommendedFor, setRecommendedFor] = useState<string[]>([])
+  const [newRecommendedFor, setNewRecommendedFor] = useState('')
+  const [awards, setAwards] = useState('')
+  const [subscribeDiscount, setSubscribeDiscount] = useState('20')
+
+  // New funnel fields
+  const [trustBadges, setTrustBadges] = useState<{ icon: string; label: string }[]>([
+    { icon: '\uD83D\uDE9A', label: 'Free Shipping\nOver $50' },
+    { icon: '\uD83D\uDC30', label: 'Cruelty\nFree' },
+    { icon: '\uD83D\uDD2C', label: 'Dermatologist\nTested' },
+    { icon: '\uD83C\uDF3F', label: 'Clean\nIngredients' },
+  ])
+  const [ingredientImages, setIngredientImages] = useState<{ name: string; image: string; description: string; benefits: string[] }[]>([])
+  const [brandStoryImage, setBrandStoryImage] = useState('')
+  const [brandStoryTitle, setBrandStoryTitle] = useState('Clean & Potent Skincare')
+  const [brandStoryText, setBrandStoryText] = useState('')
+  const [sampleReviews, setSampleReviews] = useState<{ name: string; rating: number; date: string; text: string }[]>([])
 
   // UI state
   const [saving, setSaving] = useState(false)
@@ -137,6 +164,16 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
       setHowToUse(product.how_to_use || '')
       setKeyBenefits(product.key_benefits || [])
       setRelatedProductIds(product.related_product_ids || [])
+      setRecommendedFor(product.recommended_for || [])
+      setAwards(product.awards || '')
+      setSubscribeDiscount(String(product.subscribe_discount || 20))
+      // New fields
+      if (product.trust_badges?.length) setTrustBadges(product.trust_badges)
+      if (product.ingredient_images?.length) setIngredientImages(product.ingredient_images)
+      if (product.brand_story_image) setBrandStoryImage(product.brand_story_image)
+      if (product.brand_story_title) setBrandStoryTitle(product.brand_story_title)
+      if (product.brand_story_text) setBrandStoryText(product.brand_story_text)
+      if (product.sample_reviews?.length) setSampleReviews(product.sample_reviews)
     } catch {
       if (!isNew) setNotFound(true)
     } finally {
@@ -337,6 +374,19 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
     }
   }
 
+  // Recommended For helpers
+  function addRecommendedFor() {
+    const trimmed = newRecommendedFor.trim()
+    if (trimmed && !recommendedFor.includes(trimmed)) {
+      setRecommendedFor(prev => [...prev, trimmed])
+      setNewRecommendedFor('')
+    }
+  }
+
+  function removeRecommendedFor(index: number) {
+    setRecommendedFor(prev => prev.filter((_, i) => i !== index))
+  }
+
   // Alibaba import — auto-fills all fields
   const handleAlibabaImport = async () => {
     if (!alibabaUrl) return
@@ -356,7 +406,6 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
       }
 
       // Auto-fill all form fields from the imported data
-      // auto-import returns { product: {...}, slug }
       const pd = data.product || data.productData
       if (pd) {
         if (pd.name) {
@@ -388,6 +437,53 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
     setRelatedProductIds(prev =>
       prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
     )
+  }
+
+  // Trust badge helpers
+  function updateTrustBadge(index: number, field: 'icon' | 'label', value: string) {
+    setTrustBadges(prev => prev.map((b, i) => i === index ? { ...b, [field]: value } : b))
+  }
+
+  function removeTrustBadge(index: number) {
+    setTrustBadges(prev => prev.filter((_, i) => i !== index))
+  }
+
+  function addTrustBadge() {
+    setTrustBadges(prev => [...prev, { icon: '', label: '' }])
+  }
+
+  // Ingredient images helpers
+  function updateIngredientImage(index: number, field: string, value: string | string[]) {
+    setIngredientImages(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item))
+  }
+
+  function removeIngredientImage(index: number) {
+    setIngredientImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  function addIngredientImage() {
+    setIngredientImages(prev => [...prev, { name: '', image: '', description: '', benefits: [] }])
+  }
+
+  // Sample reviews helpers
+  function updateSampleReview(index: number, field: string, value: string | number) {
+    setSampleReviews(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item))
+  }
+
+  function removeSampleReview(index: number) {
+    setSampleReviews(prev => prev.filter((_, i) => i !== index))
+  }
+
+  function addSampleReview() {
+    setSampleReviews(prev => [...prev, { name: '', rating: 5, date: '', text: '' }])
+  }
+
+  // Scroll to form section
+  function scrollToFormSection(sectionId: string) {
+    const el = document.getElementById(sectionId)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
 
   // Save
@@ -424,6 +520,15 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
       how_to_use: howToUse.trim(),
       key_benefits: keyBenefits,
       related_product_ids: relatedProductIds,
+      recommended_for: recommendedFor,
+      awards: awards.trim(),
+      subscribe_discount: parseInt(subscribeDiscount) || 20,
+      trust_badges: trustBadges,
+      ingredient_images: ingredientImages,
+      brand_story_image: brandStoryImage.trim(),
+      brand_story_title: brandStoryTitle.trim(),
+      brand_story_text: brandStoryText.trim(),
+      sample_reviews: sampleReviews,
     }
 
     try {
@@ -496,9 +601,11 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
 
   // Preview accordion sections
   const previewAccordions = [
-    { id: 'description', title: 'Description', content: description },
-    { id: 'ingredients', title: 'Ingredients', content: ingredients },
+    { id: 'description', title: 'Product Details', content: description },
+    { id: 'benefits', title: 'Key Benefits', content: keyBenefits.length > 0 ? keyBenefits.join(', ') : '' },
+    { id: 'recommended', title: 'Recommended For', content: recommendedFor.length > 0 ? recommendedFor.join(', ') : '' },
     { id: 'howToUse', title: 'How to Use', content: howToUse },
+    { id: 'awards', title: 'Awards', content: awards },
   ].filter(s => s.content.trim())
 
   // Other products for related picker (exclude current)
@@ -615,7 +722,7 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
           </div>
 
           {/* Basic info */}
-          <div className={styles.editorSection}>
+          <div id="section-basic" className={styles.editorSection}>
             <div className={styles.editorSectionTitle}>Basic Information</div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Product Name</label>
@@ -649,15 +756,15 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
           </div>
 
           {/* Product Details */}
-          <div className={styles.editorSection}>
+          <div id="section-details" className={styles.editorSection}>
             <div className={styles.editorSectionTitle}>Product Details</div>
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Ingredients</label>
+              <label className={styles.formLabel}>Ingredients (comma-separated for Key Ingredients display)</label>
               <textarea
                 className={styles.formTextarea}
                 value={ingredients}
                 onChange={e => setIngredients(e.target.value)}
-                placeholder="Full ingredients list..."
+                placeholder="Caffeine, Vitamin C, Hyaluronic Acid..."
               />
             </div>
             <div className={styles.formGroup}>
@@ -727,10 +834,57 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
                 </button>
               </div>
             </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Recommended For</label>
+              {recommendedFor.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+                  {recommendedFor.map((tag, i) => (
+                    <span key={i} style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '4px',
+                      background: 'var(--cream-dark)', padding: '4px 10px', borderRadius: '12px',
+                      fontSize: '12px', color: 'var(--brown-dark)',
+                    }}>
+                      {tag}
+                      <button type="button" onClick={() => removeRecommendedFor(i)} style={{
+                        background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer',
+                        fontSize: '12px', padding: '0 2px', lineHeight: 1,
+                      }}>&times;</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  className={styles.formInput}
+                  type="text"
+                  value={newRecommendedFor}
+                  onChange={e => setNewRecommendedFor(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addRecommendedFor() } }}
+                  placeholder="e.g. Oily Skin, Acne-Prone"
+                  style={{ flex: 1 }}
+                />
+                <button type="button" onClick={addRecommendedFor} style={{
+                  padding: '8px 16px', background: 'var(--brown-dark)', color: 'var(--cream)',
+                  border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'var(--font-body)', letterSpacing: '1px',
+                  textTransform: 'uppercase' as const, flexShrink: 0,
+                }}>Add</button>
+              </div>
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Awards</label>
+              <textarea
+                className={styles.formTextarea}
+                value={awards}
+                onChange={e => setAwards(e.target.value)}
+                placeholder="Awards and recognitions..."
+                style={{ minHeight: '60px' }}
+              />
+            </div>
           </div>
 
           {/* Pricing */}
-          <div className={styles.editorSection}>
+          <div id="section-pricing" className={styles.editorSection}>
             <div className={styles.editorSectionTitle}>Pricing</div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
@@ -757,6 +911,18 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
                   placeholder="Optional"
                 />
               </div>
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Subscribe & Save Discount (%)</label>
+              <input
+                className={styles.formInput}
+                type="number"
+                min="0"
+                max="100"
+                value={subscribeDiscount}
+                onChange={e => setSubscribeDiscount(e.target.value)}
+                placeholder="20"
+              />
             </div>
           </div>
 
@@ -808,9 +974,9 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
             </div>
           </div>
 
-          {/* Reviews */}
-          <div className={styles.editorSection}>
-            <div className={styles.editorSectionTitle}>Reviews</div>
+          {/* Reviews Summary */}
+          <div id="section-reviews-summary" className={styles.editorSection}>
+            <div className={styles.editorSectionTitle}>Reviews Summary</div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Rating (0-5)</label>
@@ -838,7 +1004,7 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
           </div>
 
           {/* Images */}
-          <div className={styles.editorSection}>
+          <div id="section-images" className={styles.editorSection}>
             <div className={styles.editorSectionTitle}>Images</div>
 
             <div className={styles.imageSection}>
@@ -869,7 +1035,7 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
                           type="button"
                           disabled={enhancingIndex !== null}
                         >
-                          {enhancingIndex === i ? '...' : '✨'}
+                          {enhancingIndex === i ? '...' : '\u2728'}
                         </button>
                       </div>
                       {showEnhancePrompt === i && (
@@ -930,7 +1096,7 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
                   onClick={generateNewImage}
                   disabled={generating}
                 >
-                  {generating ? 'Generating...' : '✨ Generate Image'}
+                  {generating ? 'Generating...' : '\u2728 Generate Image'}
                 </button>
                 {images.length > 0 && (
                   <p className={styles.generateHint}>
@@ -941,8 +1107,140 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
             </div>
           </div>
 
+          {/* Trust Badges */}
+          <div id="section-trust-badges" className={styles.editorSection}>
+            <div className={styles.editorSectionTitle}>Trust Badges</div>
+            <div className={styles.badgeEditor}>
+              {trustBadges.map((badge, i) => (
+                <div key={i} className={styles.badgeRow}>
+                  <input
+                    className={styles.formInput}
+                    type="text"
+                    value={badge.icon}
+                    onChange={e => updateTrustBadge(i, 'icon', e.target.value)}
+                    placeholder="Icon"
+                    style={{ textAlign: 'center', fontSize: '18px', padding: '6px' }}
+                  />
+                  <input
+                    className={styles.formInput}
+                    type="text"
+                    value={badge.label}
+                    onChange={e => updateTrustBadge(i, 'label', e.target.value)}
+                    placeholder="Label text"
+                  />
+                  <button type="button" className={styles.badgeRowRemove} onClick={() => removeTrustBadge(i)}>&times;</button>
+                </div>
+              ))}
+              <button type="button" className={styles.addItemBtn} onClick={addTrustBadge}>+ Add Badge</button>
+            </div>
+          </div>
+
+          {/* Key Ingredients (with images) */}
+          <div id="section-ingredients" className={styles.editorSection}>
+            <div className={styles.editorSectionTitle}>Key Ingredients (Cards)</div>
+            <p style={{ fontSize: '11px', color: 'var(--brown-light)', marginBottom: '12px' }}>
+              These are the visual ingredient cards shown below the product. The comma-separated ingredients above are used for accordion text.
+            </p>
+            <div className={styles.ingredientEditor}>
+              {ingredientImages.map((item, i) => (
+                <div key={i} className={styles.ingredientEntry}>
+                  <div className={styles.ingredientEntryHeader}>
+                    <span className={styles.ingredientEntryTitle}>Ingredient {i + 1}</span>
+                    <button type="button" className={styles.ingredientEntryRemove} onClick={() => removeIngredientImage(i)}>&times;</button>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Name</label>
+                    <input className={styles.formInput} type="text" value={item.name}
+                      onChange={e => updateIngredientImage(i, 'name', e.target.value)} placeholder="e.g. Caffeine" />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Image URL</label>
+                    <input className={styles.formInput} type="text" value={item.image}
+                      onChange={e => updateIngredientImage(i, 'image', e.target.value)} placeholder="https://..." />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Description</label>
+                    <textarea className={styles.formTextarea} value={item.description}
+                      onChange={e => updateIngredientImage(i, 'description', e.target.value)}
+                      placeholder="Ingredient description..." style={{ minHeight: '60px' }} />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Benefits (comma-separated)</label>
+                    <input className={styles.formInput} type="text"
+                      value={item.benefits.join(', ')}
+                      onChange={e => updateIngredientImage(i, 'benefits', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                      placeholder="Reduces puffiness, Boosts circulation" />
+                  </div>
+                </div>
+              ))}
+              <button type="button" className={styles.addItemBtn} onClick={addIngredientImage}>+ Add Ingredient Card</button>
+            </div>
+          </div>
+
+          {/* Brand Story */}
+          <div id="section-brand-story" className={styles.editorSection}>
+            <div className={styles.editorSectionTitle}>Brand Story</div>
+            <div className={styles.brandStoryEditor}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Image URL</label>
+                <input className={styles.formInput} type="text" value={brandStoryImage}
+                  onChange={e => setBrandStoryImage(e.target.value)} placeholder="https://..." />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Title</label>
+                <input className={styles.formInput} type="text" value={brandStoryTitle}
+                  onChange={e => setBrandStoryTitle(e.target.value)} placeholder="Clean & Potent Skincare" />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Text</label>
+                <textarea className={styles.formTextarea} value={brandStoryText}
+                  onChange={e => setBrandStoryText(e.target.value)}
+                  placeholder="Brand story text..." style={{ minHeight: '120px' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Customer Reviews */}
+          <div id="section-reviews" className={styles.editorSection}>
+            <div className={styles.editorSectionTitle}>Customer Reviews</div>
+            <div className={styles.reviewEditor}>
+              {sampleReviews.map((review, i) => (
+                <div key={i} className={styles.reviewEntry}>
+                  <div className={styles.reviewEntryHeader}>
+                    <span className={styles.reviewEntryTitle}>Review {i + 1}</span>
+                    <button type="button" className={styles.reviewEntryRemove} onClick={() => removeSampleReview(i)}>&times;</button>
+                  </div>
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>Name</label>
+                      <input className={styles.formInput} type="text" value={review.name}
+                        onChange={e => updateSampleReview(i, 'name', e.target.value)} placeholder="Sarah M." />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>Rating (1-5)</label>
+                      <input className={styles.formInput} type="number" min="1" max="5" value={review.rating}
+                        onChange={e => updateSampleReview(i, 'rating', parseInt(e.target.value) || 5)} />
+                    </div>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Date</label>
+                    <input className={styles.formInput} type="text" value={review.date}
+                      onChange={e => updateSampleReview(i, 'date', e.target.value)} placeholder="March 12, 2026" />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Review Text</label>
+                    <textarea className={styles.formTextarea} value={review.text}
+                      onChange={e => updateSampleReview(i, 'text', e.target.value)}
+                      placeholder="Review text..." style={{ minHeight: '60px' }} />
+                  </div>
+                </div>
+              ))}
+              <button type="button" className={styles.addItemBtn} onClick={addSampleReview}>+ Add Review</button>
+            </div>
+          </div>
+
           {/* Related Products */}
-          <div className={styles.editorSection}>
+          <div id="section-related" className={styles.editorSection}>
             <div className={styles.editorSectionTitle}>Related Products</div>
             {otherProducts.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -969,140 +1267,334 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
           </div>
         </div>
 
-        {/* Right - Live Preview */}
+        {/* Right - Full Funnel Preview */}
         <div className={styles.preview}>
-          <div className={styles.previewLabel}>Live Preview</div>
+          <div className={styles.previewLabel}>Full Funnel Preview</div>
           <div className={styles.previewCard}>
-            <div className={styles.previewImage}>
-              {previewImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={previewImage} alt={name || 'Product'} />
-              ) : (
-                'No image'
-              )}
-            </div>
-            <div className={styles.previewInfo}>
-              {previewBadge && (
-                <span className={styles.previewBadge}>{previewBadge}</span>
-              )}
-              <div className={styles.previewTitle}>
-                {name || 'Product Name'}
-              </div>
-              <div className={styles.previewPriceRow}>
-                <span className={styles.previewPrice}>
-                  ${previewPrice.toFixed(2)}
-                </span>
-                {previewComparePrice > 0 && previewComparePrice > previewPrice && (
-                  <span className={styles.previewComparePrice}>
-                    ${previewComparePrice.toFixed(2)}
-                  </span>
-                )}
-              </div>
-              <div className={styles.previewStars}>
-                {renderStars(previewRating)} ({previewReviewCount})
-              </div>
-              {description && (
-                <div className={styles.previewDescription}>
-                  {description}
-                </div>
-              )}
+            <div className={styles.funnelPreview}>
 
-              {/* Key Benefits Preview */}
-              {keyBenefits.length > 0 && (
-                <div style={{
-                  background: 'var(--cream)',
-                  borderRadius: '8px',
-                  padding: '12px 16px',
-                  marginBottom: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px',
-                }}>
-                  {keyBenefits.map((b, i) => (
-                    <div key={i} style={{ fontSize: '12px', color: 'var(--brown)', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                      <span style={{ color: 'var(--brown-dark)', fontWeight: 700, flexShrink: 0 }}>{'\u2713'}</span>
-                      <span>{b}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className={styles.previewAddToCart}>
-                ADD TO CART
-              </div>
-
-              {/* Trust Badges Preview */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '8px',
-                padding: '12px 0',
-                borderTop: '1px solid #eee',
-                marginBottom: '16px',
-              }}>
-                {[
-                  { icon: '\uD83D\uDE9A', text: 'Free Shipping' },
-                  { icon: '\uD83D\uDC30', text: 'Cruelty Free' },
-                  { icon: '\uD83D\uDD2C', text: 'Derm Tested' },
-                  { icon: '\uD83C\uDF3F', text: 'Clean' },
-                ].map((badge, i) => (
-                  <div key={i} style={{ textAlign: 'center', fontSize: '9px', color: 'var(--brown)' }}>
-                    <div style={{ fontSize: '16px', marginBottom: '2px' }}>{badge.icon}</div>
-                    {badge.text}
+              {/* 1. Gallery Preview */}
+              <div className={styles.funnelSection} style={{ padding: 0 }}>
+                <div style={{ position: 'relative' }}>
+                  <div className={styles.funnelSectionLabel} style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, margin: 0 }}>
+                    <button className={styles.funnelEditLink} onClick={() => scrollToFormSection('section-images')}>Edit</button>
                   </div>
-                ))}
-              </div>
-
-              {/* Accordion Preview */}
-              {previewAccordions.length > 0 && (
-                <div style={{ borderTop: '1px solid #eee' }}>
-                  {previewAccordions.map(section => (
-                    <div key={section.id} style={{ borderBottom: '1px solid #eee' }}>
-                      <button
-                        onClick={() => setPreviewAccordion(previewAccordion === section.id ? null : section.id)}
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: '12px 0',
-                          background: 'none',
-                          border: 'none',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                          color: 'var(--brown-dark)',
-                          cursor: 'pointer',
-                          fontFamily: 'var(--font-body)',
-                        }}
-                      >
-                        <span>{section.title}</span>
-                        <span style={{ color: 'var(--brown-light)', fontSize: '14px' }}>
-                          {previewAccordion === section.id ? '\u2212' : '+'}
-                        </span>
-                      </button>
-                      {previewAccordion === section.id && (
-                        <div style={{ padding: '0 0 12px', fontSize: '12px', lineHeight: 1.7, color: 'var(--brown)', whiteSpace: 'pre-wrap' }}>
-                          {section.content}
-                        </div>
+                  <div style={{ display: 'flex', gap: '8px', padding: '12px' }}>
+                    {images.length > 1 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '48px', flexShrink: 0 }}>
+                        {images.slice(0, 5).map((img, i) => (
+                          <div key={i} style={{
+                            width: '48px', height: '48px', borderRadius: '4px', overflow: 'hidden',
+                            border: i === 0 ? '2px solid var(--brown-dark)' : '1px solid var(--cream-dark)',
+                          }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div style={{
+                      flex: 1, aspectRatio: '1', background: '#f0ebe5', borderRadius: '8px',
+                      overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {previewImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={previewImage} alt={name || 'Product'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ color: 'var(--brown-light)', fontSize: '14px' }}>No image</span>
                       )}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
+              </div>
 
-              <div className={styles.previewDetails}>
-                <div className={styles.previewDetailItem}>
-                  Category: {category.replace('-', ' ')}
+              {/* 2. Product Info Preview */}
+              <div className={styles.funnelSection} style={{ padding: '16px' }}>
+                <div className={styles.funnelSectionLabel}>
+                  <span className={styles.funnelSectionLabelText}>Product Info</span>
+                  <button className={styles.funnelEditLink} onClick={() => scrollToFormSection('section-basic')}>Edit</button>
                 </div>
-                <div className={styles.previewDetailItem}>
-                  Status: {inStock ? 'In Stock' : 'Out of Stock'}
+                {previewBadge && (
+                  <span className={styles.previewBadge}>{previewBadge}</span>
+                )}
+                <div style={{ fontFamily: 'var(--font-heading)', fontSize: '20px', color: 'var(--brown-dark)', marginBottom: '6px' }}>
+                  {name || 'Product Name'}
                 </div>
-                {(tagNew || tagBestSeller) && (
-                  <div className={styles.previewDetailItem}>
-                    Tags: {[tagNew && 'New', tagBestSeller && 'Best Seller'].filter(Boolean).join(', ')}
+                <div style={{ fontSize: '12px', color: 'var(--brown-light)', marginBottom: '6px' }}>
+                  {renderStars(previewRating)} ({previewReviewCount} reviews)
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 500, color: 'var(--brown-dark)' }}>${previewPrice.toFixed(2)}</span>
+                  {previewComparePrice > 0 && previewComparePrice > previewPrice && (
+                    <span style={{ fontSize: '13px', color: 'var(--gray)', textDecoration: 'line-through' }}>${previewComparePrice.toFixed(2)}</span>
+                  )}
+                </div>
+                {/* Subscribe option */}
+                <div style={{
+                  display: 'flex', gap: '8px', marginBottom: '10px', fontSize: '11px',
+                }}>
+                  <span style={{
+                    padding: '4px 10px', border: '1px solid var(--brown-dark)', borderRadius: '4px',
+                    color: 'var(--brown-dark)', fontWeight: 500,
+                  }}>One-time</span>
+                  <span style={{
+                    padding: '4px 10px', border: '1px solid var(--cream-dark)', borderRadius: '4px',
+                    color: 'var(--brown-light)',
+                  }}>Subscribe & Save {subscribeDiscount}%</span>
+                </div>
+                {/* Quantity + ATC */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', border: '1px solid var(--cream-dark)',
+                    borderRadius: '6px', overflow: 'hidden',
+                  }}>
+                    <span style={{ padding: '6px 10px', fontSize: '12px', color: 'var(--brown-light)' }}>{'\u2212'}</span>
+                    <span style={{ padding: '6px 8px', fontSize: '12px', fontWeight: 500 }}>1</span>
+                    <span style={{ padding: '6px 10px', fontSize: '12px', color: 'var(--brown-light)' }}>+</span>
+                  </div>
+                  <div style={{
+                    flex: 1, padding: '10px', background: 'var(--brown-dark)', color: 'var(--cream)',
+                    fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600,
+                    textAlign: 'center', borderRadius: '6px',
+                  }}>
+                    ADD TO CART &mdash; ${previewPrice.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Accordions Preview */}
+              <div className={styles.funnelSection} style={{ padding: '0 16px 16px' }}>
+                <div className={styles.funnelSectionLabel}>
+                  <span className={styles.funnelSectionLabelText}>Accordions</span>
+                  <button className={styles.funnelEditLink} onClick={() => scrollToFormSection('section-details')}>Edit</button>
+                </div>
+                {previewAccordions.length > 0 ? (
+                  <div style={{ borderTop: '1px solid #eee' }}>
+                    {previewAccordions.map(section => (
+                      <div key={section.id} style={{ borderBottom: '1px solid #eee' }}>
+                        <button
+                          onClick={() => setPreviewAccordion(previewAccordion === section.id ? null : section.id)}
+                          style={{
+                            width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                            padding: '10px 0', background: 'none', border: 'none', fontSize: '11px', fontWeight: 500,
+                            color: 'var(--brown-dark)', cursor: 'pointer', fontFamily: 'var(--font-body)',
+                          }}
+                        >
+                          <span>{section.title}</span>
+                          <span style={{ color: 'var(--brown-light)', fontSize: '13px' }}>
+                            {previewAccordion === section.id ? '\u2212' : '+'}
+                          </span>
+                        </button>
+                        {previewAccordion === section.id && (
+                          <div style={{ padding: '0 0 10px', fontSize: '11px', lineHeight: 1.6, color: 'var(--brown)', whiteSpace: 'pre-wrap' }}>
+                            {section.id === 'benefits' && keyBenefits.length > 0 ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {keyBenefits.map((b, i) => (
+                                  <div key={i} style={{ display: 'flex', gap: '6px' }}>
+                                    <span style={{ color: 'var(--brown-dark)', fontWeight: 700 }}>{'\u2713'}</span>
+                                    <span>{b}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : section.id === 'recommended' && recommendedFor.length > 0 ? (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                {recommendedFor.map((tag, i) => (
+                                  <span key={i} style={{
+                                    padding: '3px 8px', background: 'var(--cream)', borderRadius: '10px',
+                                    fontSize: '10px', color: 'var(--brown-dark)',
+                                  }}>{tag}</span>
+                                ))}
+                              </div>
+                            ) : (
+                              section.content
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '11px', color: 'var(--brown-light)', fontStyle: 'italic' }}>
+                    No accordion content set
                   </div>
                 )}
               </div>
+
+              {/* 4. Trust Badges Preview */}
+              <div className={styles.funnelSection} style={{ padding: '16px' }}>
+                <div className={styles.funnelSectionLabel}>
+                  <span className={styles.funnelSectionLabelText}>Trust Badges</span>
+                  <button className={styles.funnelEditLink} onClick={() => scrollToFormSection('section-trust-badges')}>Edit</button>
+                </div>
+                <div style={{
+                  display: 'grid', gridTemplateColumns: `repeat(${Math.min(trustBadges.length, 4)}, 1fr)`,
+                  gap: '8px', textAlign: 'center',
+                }}>
+                  {trustBadges.map((badge, i) => (
+                    <div key={i} style={{ fontSize: '9px', color: 'var(--brown)', lineHeight: 1.3 }}>
+                      <div style={{ fontSize: '20px', marginBottom: '4px' }}>{badge.icon}</div>
+                      <div style={{ whiteSpace: 'pre-line' }}>{badge.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 5. Key Ingredients Preview */}
+              <div className={styles.funnelSection} style={{ padding: '16px' }}>
+                <div className={styles.funnelSectionLabel}>
+                  <span className={styles.funnelSectionLabelText}>Key Ingredients</span>
+                  <button className={styles.funnelEditLink} onClick={() => scrollToFormSection('section-ingredients')}>Edit</button>
+                </div>
+                {ingredientImages.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(ingredientImages.length, 3)}, 1fr)`, gap: '10px' }}>
+                    {ingredientImages.map((item, i) => (
+                      <div key={i} style={{
+                        background: 'var(--cream)', borderRadius: '8px', overflow: 'hidden',
+                        border: '1px solid var(--cream-dark)',
+                      }}>
+                        <div style={{
+                          height: '60px', background: '#f0ebe5', display: 'flex',
+                          alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+                        }}>
+                          {item.image ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <span style={{ fontSize: '10px', color: 'var(--brown-light)' }}>{item.name || 'Image'}</span>
+                          )}
+                        </div>
+                        <div style={{ padding: '8px' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--brown-dark)', marginBottom: '3px' }}>
+                            {item.name || 'Ingredient'}
+                          </div>
+                          <div style={{ fontSize: '9px', color: 'var(--brown)', lineHeight: 1.4 }}>
+                            {item.description ? item.description.slice(0, 60) + (item.description.length > 60 ? '...' : '') : 'No description'}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '11px', color: 'var(--brown-light)', fontStyle: 'italic' }}>
+                    {ingredients ? `Auto-generated from: ${ingredients.split(',').slice(0, 3).join(', ')}` : 'No ingredient cards set'}
+                  </div>
+                )}
+              </div>
+
+              {/* 6. Brand Story Preview */}
+              <div className={styles.funnelSection} style={{ padding: '16px' }}>
+                <div className={styles.funnelSectionLabel}>
+                  <span className={styles.funnelSectionLabelText}>Brand Story</span>
+                  <button className={styles.funnelEditLink} onClick={() => scrollToFormSection('section-brand-story')}>Edit</button>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <div style={{
+                    width: '80px', height: '80px', borderRadius: '8px', background: '#f0ebe5',
+                    flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {brandStoryImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={brandStoryImage} alt="Brand" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ fontSize: '9px', color: 'var(--brown-light)' }}>Image</span>
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--brown-dark)', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
+                      {brandStoryTitle || 'Brand Story Title'}
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'var(--brown)', lineHeight: 1.5 }}>
+                      {brandStoryText ? brandStoryText.slice(0, 120) + (brandStoryText.length > 120 ? '...' : '') : 'Add brand story text...'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 7. Reviews Preview */}
+              <div className={styles.funnelSection} style={{ padding: '16px' }}>
+                <div className={styles.funnelSectionLabel}>
+                  <span className={styles.funnelSectionLabelText}>Customer Reviews</span>
+                  <button className={styles.funnelEditLink} onClick={() => scrollToFormSection('section-reviews')}>Edit</button>
+                </div>
+                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '14px', color: 'var(--brown-dark)' }}>{renderStars(previewRating)}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--brown-light)' }}>Based on {previewReviewCount} reviews</div>
+                </div>
+                {sampleReviews.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {sampleReviews.slice(0, 3).map((review, i) => (
+                      <div key={i} style={{
+                        background: 'var(--cream)', borderRadius: '6px', padding: '10px',
+                        border: '1px solid var(--cream-dark)',
+                      }}>
+                        <div style={{ fontSize: '11px', color: 'var(--brown-dark)', marginBottom: '4px' }}>
+                          {'\u2605'.repeat(review.rating)}{'\u2606'.repeat(5 - review.rating)}
+                        </div>
+                        <div style={{ fontSize: '10px', color: 'var(--brown)', lineHeight: 1.4, marginBottom: '4px' }}>
+                          &ldquo;{review.text ? review.text.slice(0, 80) + (review.text.length > 80 ? '...' : '') : 'Review text'}&rdquo;
+                        </div>
+                        <div style={{ fontSize: '9px', color: 'var(--brown-light)', display: 'flex', justifyContent: 'space-between' }}>
+                          <span>{review.name || 'Reviewer'}</span>
+                          <span>{review.date}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '11px', color: 'var(--brown-light)', fontStyle: 'italic', textAlign: 'center' }}>
+                    No sample reviews added
+                  </div>
+                )}
+              </div>
+
+              {/* 8. Related Products Preview */}
+              <div className={styles.funnelSection} style={{ padding: '16px', borderBottom: 'none' }}>
+                <div className={styles.funnelSectionLabel}>
+                  <span className={styles.funnelSectionLabelText}>You May Also Like</span>
+                  <button className={styles.funnelEditLink} onClick={() => scrollToFormSection('section-related')}>Edit</button>
+                </div>
+                <div style={{
+                  display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px',
+                }}>
+                  {relatedProductIds.length > 0 ? (
+                    relatedProductIds.slice(0, 4).map((id, i) => {
+                      const rp = allProducts.find(p => p.id === id)
+                      return (
+                        <div key={i} style={{
+                          background: 'var(--cream)', borderRadius: '6px', padding: '8px',
+                          textAlign: 'center', border: '1px solid var(--cream-dark)',
+                        }}>
+                          <div style={{
+                            height: '40px', background: '#f0ebe5', borderRadius: '4px', marginBottom: '4px',
+                            overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            {rp?.images?.[0] && !rp.images[0].includes('/images/products/') ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={rp.images[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <span style={{ fontSize: '8px', color: 'var(--brown-light)' }}>IMG</span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '8px', color: 'var(--brown-dark)', fontWeight: 500 }}>
+                            {rp?.name || 'Product'}
+                          </div>
+                        </div>
+                      )
+                    })
+                  ) : (
+                    [0, 1, 2, 3].map(i => (
+                      <div key={i} style={{
+                        background: 'var(--cream)', borderRadius: '6px', padding: '8px',
+                        textAlign: 'center', border: '1px dashed var(--cream-dark)',
+                      }}>
+                        <div style={{ height: '40px', background: '#f0ebe5', borderRadius: '4px', marginBottom: '4px' }} />
+                        <div style={{ fontSize: '8px', color: 'var(--brown-light)' }}>Product</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
             </div>
           </div>
         </div>

@@ -20,6 +20,12 @@ export interface Product {
   awards?: string
   subscribeDiscount?: number
   ritualProductIds?: string[]
+  trustBadges?: { icon: string; label: string }[]
+  ingredientImages?: { name: string; image: string; description: string; benefits: string[] }[]
+  brandStoryImage?: string
+  brandStoryTitle?: string
+  brandStoryText?: string
+  sampleReviews?: { name: string; rating: number; date: string; text: string }[]
 }
 
 export interface Collection {

@@ -901,6 +901,210 @@
   background: #fef2f2;
 }
 
+/* Preview funnel sections */
+.funnelPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.funnelSection {
+  position: relative;
+  border-bottom: 1px solid var(--cream-dark);
+  padding: 16px 0;
+}
+
+.funnelSectionLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.funnelSectionLabelText {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--brown-light);
+}
+
+.funnelEditLink {
+  font-size: 10px;
+  color: var(--brown-light);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.funnelEditLink:hover {
+  color: var(--brown-dark);
+  background: var(--cream-dark);
+}
+
+/* Trust badges editor */
+.badgeEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.badgeRow {
+  display: grid;
+  grid-template-columns: 60px 1fr 30px;
+  gap: 8px;
+  align-items: center;
+}
+
+.badgeRowRemove {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #e74c3c;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.badgeRowRemove:hover {
+  background: #fecaca;
+}
+
+/* Ingredients editor */
+.ingredientEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ingredientEntry {
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.ingredientEntryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ingredientEntryTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brown-dark);
+  letter-spacing: 0.5px;
+}
+
+.ingredientEntryRemove {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #e74c3c;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.ingredientEntryRemove:hover {
+  background: #fecaca;
+}
+
+/* Reviews editor */
+.reviewEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reviewEntry {
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.reviewEntryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.reviewEntryTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brown-dark);
+  letter-spacing: 0.5px;
+}
+
+.reviewEntryRemove {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #e74c3c;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.reviewEntryRemove:hover {
+  background: #fecaca;
+}
+
+/* Brand story editor */
+.brandStoryEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Add button for lists */
+.addItemBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--brown-dark);
+  color: var(--cream);
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: opacity 0.2s;
+  align-self: flex-start;
+}
+
+.addItemBtn:hover {
+  opacity: 0.9;
+}
+
 /* Responsive */
 @media (max-width: 999px) {
   .content {

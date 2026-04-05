@@ -253,6 +253,12 @@ interface DbProduct {
   awards: string
   subscribe_discount: number
   ritual_product_ids: string[]
+  trust_badges: { icon: string; label: string }[]
+  ingredient_images: { name: string; image: string; description: string; benefits: string[] }[]
+  brand_story_image: string
+  brand_story_title: string
+  brand_story_text: string
+  sample_reviews: { name: string; rating: number; date: string; text: string }[]
 }
 
 function dbToProduct(db: DbProduct): Product {
@@ -278,6 +284,12 @@ function dbToProduct(db: DbProduct): Product {
     awards: db.awards || '',
     subscribeDiscount: db.subscribe_discount || 20,
     ritualProductIds: db.ritual_product_ids || [],
+    trustBadges: db.trust_badges || [{ icon: '\uD83D\uDE9A', label: 'Free Shipping\nOver $50' }, { icon: '\uD83D\uDC30', label: 'Cruelty\nFree' }, { icon: '\uD83D\uDD2C', label: 'Dermatologist\nTested' }, { icon: '\uD83C\uDF3F', label: 'Clean\nIngredients' }],
+    ingredientImages: db.ingredient_images || [],
+    brandStoryImage: db.brand_story_image || '',
+    brandStoryTitle: db.brand_story_title || 'Clean & Potent Skincare',
+    brandStoryText: db.brand_story_text || '',
+    sampleReviews: db.sample_reviews || [],
   }
 }
 
