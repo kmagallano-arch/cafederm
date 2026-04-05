@@ -230,6 +230,25 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
     setDragActive(false)
   }
 
+  // Paste image from clipboard (Cmd+V / Ctrl+V)
+  useEffect(() => {
+    function handlePaste(e: ClipboardEvent) {
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (item.type.startsWith('image/')) {
+          e.preventDefault()
+          const file = item.getAsFile()
+          if (file) uploadFile(file)
+          return
+        }
+      }
+    }
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   function removeImage(index: number) {
     setImages(prev => prev.filter((_, i) => i !== index))
   }
@@ -784,7 +803,7 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
               >
                 <div className={styles.uploadIcon}>+</div>
                 <div className={styles.uploadText}>
-                  {uploading ? 'Uploading...' : 'Click or drag image to upload'}
+                  {uploading ? 'Uploading...' : 'Click, drag, or paste (Cmd+V) image'}
                 </div>
                 {uploading && <div className={styles.uploadProgress}>Please wait...</div>}
               </div>
