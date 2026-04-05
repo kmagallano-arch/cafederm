@@ -11,6 +11,11 @@ export interface Product {
   rating: number
   reviewCount: number
   inStock: boolean
+  ingredients?: string
+  howToUse?: string
+  keyBenefits?: string[]
+  relatedProductIds?: string[]
+  variants?: { name: string; options: string[] }[]
 }
 
 export interface Collection {

@@ -17,6 +17,11 @@ interface DbProduct {
   rating: number
   review_count: number
   in_stock: boolean
+  ingredients: string
+  how_to_use: string
+  key_benefits: string[]
+  related_product_ids: string[]
+  variants: { name: string; options: string[] }[]
 }
 
 function slugify(text: string): string {
@@ -50,6 +55,9 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
   const [notFound, setNotFound] = useState(false)
   const [productId, setProductId] = useState<string | null>(null)
 
+  // All products (for related products picker)
+  const [allProducts, setAllProducts] = useState<DbProduct[]>([])
+
   // Form state
   const [name, setName] = useState('')
   const [formSlug, setFormSlug] = useState('')
@@ -64,6 +72,13 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
   const [reviewCount, setReviewCount] = useState('0')
   const [images, setImages] = useState<string[]>([])
 
+  // New fields
+  const [ingredients, setIngredients] = useState('')
+  const [howToUse, setHowToUse] = useState('')
+  const [keyBenefits, setKeyBenefits] = useState<string[]>([])
+  const [newBenefit, setNewBenefit] = useState('')
+  const [relatedProductIds, setRelatedProductIds] = useState<string[]>([])
+
   // UI state
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -71,6 +86,7 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
   const [dragActive, setDragActive] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [previewAccordion, setPreviewAccordion] = useState<string | null>('description')
 
   // Check session on mount
   useEffect(() => {
@@ -83,15 +99,17 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
 
   // Fetch product data
   const fetchProduct = useCallback(async () => {
-    if (isNew) return
-    setLoadingProduct(true)
     try {
       const res = await fetch('/api/admin/products')
       if (!res.ok) {
-        setNotFound(true)
+        if (!isNew) setNotFound(true)
         return
       }
       const products: DbProduct[] = await res.json()
+      setAllProducts(products)
+
+      if (isNew) return
+
       const product = products.find(p => p.slug === slug)
       if (!product) {
         setNotFound(true)
@@ -110,8 +128,12 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
       setRating(String(product.rating))
       setReviewCount(String(product.review_count))
       setImages(product.images || [])
+      setIngredients(product.ingredients || '')
+      setHowToUse(product.how_to_use || '')
+      setKeyBenefits(product.key_benefits || [])
+      setRelatedProductIds(product.related_product_ids || [])
     } catch {
-      setNotFound(true)
+      if (!isNew) setNotFound(true)
     } finally {
       setLoadingProduct(false)
     }
@@ -207,6 +229,33 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
     setImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  // Key benefits helpers
+  function addBenefit() {
+    const trimmed = newBenefit.trim()
+    if (trimmed && !keyBenefits.includes(trimmed)) {
+      setKeyBenefits(prev => [...prev, trimmed])
+      setNewBenefit('')
+    }
+  }
+
+  function removeBenefit(index: number) {
+    setKeyBenefits(prev => prev.filter((_, i) => i !== index))
+  }
+
+  function handleBenefitKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      addBenefit()
+    }
+  }
+
+  // Related products toggle
+  function toggleRelatedProduct(id: string) {
+    setRelatedProductIds(prev =>
+      prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
+    )
+  }
+
   // Save
   async function handleSave() {
     if (!name.trim() || !formSlug.trim()) {
@@ -237,6 +286,10 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
       rating: parseFloat(rating) || 0,
       review_count: parseInt(reviewCount) || 0,
       images: images.length > 0 ? images : ['/images/products/placeholder.jpg'],
+      ingredients: ingredients.trim(),
+      how_to_use: howToUse.trim(),
+      key_benefits: keyBenefits,
+      related_product_ids: relatedProductIds,
     }
 
     try {
@@ -251,10 +304,8 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
           alert(`Error: ${err.error}`)
           return
         }
-        const created = await res.json()
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
-        // Navigate to the real edit page
         router.push(`/admin/products/${formSlug.trim()}`)
       } else {
         payload.id = productId
@@ -308,6 +359,16 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
   const previewReviewCount = parseInt(reviewCount || '0')
   const previewImage = images.length > 0 ? images[0] : null
   const previewBadge = tagNew ? 'NEW' : tagBestSeller ? 'BEST SELLER' : null
+
+  // Preview accordion sections
+  const previewAccordions = [
+    { id: 'description', title: 'Description', content: description },
+    { id: 'ingredients', title: 'Ingredients', content: ingredients },
+    { id: 'howToUse', title: 'How to Use', content: howToUse },
+  ].filter(s => s.content.trim())
+
+  // Other products for related picker (exclude current)
+  const otherProducts = allProducts.filter(p => p.id !== productId)
 
   // Render states
 
@@ -419,6 +480,87 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Product description..."
               />
+            </div>
+          </div>
+
+          {/* Product Details */}
+          <div className={styles.editorSection}>
+            <div className={styles.editorSectionTitle}>Product Details</div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Ingredients</label>
+              <textarea
+                className={styles.formTextarea}
+                value={ingredients}
+                onChange={e => setIngredients(e.target.value)}
+                placeholder="Full ingredients list..."
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>How to Use</label>
+              <textarea
+                className={styles.formTextarea}
+                value={howToUse}
+                onChange={e => setHowToUse(e.target.value)}
+                placeholder="Usage instructions..."
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Key Benefits</label>
+              {keyBenefits.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' }}>
+                  {keyBenefits.map((benefit, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--brown)' }}>
+                      <span>{'\u2713'} {benefit}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeBenefit(i)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#e74c3c',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          padding: '0 4px',
+                          lineHeight: 1,
+                        }}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  className={styles.formInput}
+                  type="text"
+                  value={newBenefit}
+                  onChange={e => setNewBenefit(e.target.value)}
+                  onKeyDown={handleBenefitKeyDown}
+                  placeholder="Add a benefit and press Enter"
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={addBenefit}
+                  style={{
+                    padding: '8px 16px',
+                    background: 'var(--brown-dark)',
+                    color: 'var(--cream)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-body)',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase' as const,
+                    flexShrink: 0,
+                  }}
+                >
+                  Add
+                </button>
+              </div>
             </div>
           </div>
 
@@ -573,6 +715,33 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
               />
             </div>
           </div>
+
+          {/* Related Products */}
+          <div className={styles.editorSection}>
+            <div className={styles.editorSectionTitle}>Related Products</div>
+            {otherProducts.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {otherProducts.map(p => (
+                  <label
+                    key={p.id}
+                    className={styles.formCheckbox}
+                    style={{ padding: '6px 0' }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={relatedProductIds.includes(p.id)}
+                      onChange={() => toggleRelatedProduct(p.id)}
+                    />
+                    {p.name}
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: '13px', color: 'var(--gray)' }}>
+                No other products available
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right - Live Preview */}
@@ -612,9 +781,90 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
                   {description}
                 </div>
               )}
+
+              {/* Key Benefits Preview */}
+              {keyBenefits.length > 0 && (
+                <div style={{
+                  background: 'var(--cream)',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  marginBottom: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                }}>
+                  {keyBenefits.map((b, i) => (
+                    <div key={i} style={{ fontSize: '12px', color: 'var(--brown)', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                      <span style={{ color: 'var(--brown-dark)', fontWeight: 700, flexShrink: 0 }}>{'\u2713'}</span>
+                      <span>{b}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className={styles.previewAddToCart}>
                 ADD TO CART
               </div>
+
+              {/* Trust Badges Preview */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '8px',
+                padding: '12px 0',
+                borderTop: '1px solid #eee',
+                marginBottom: '16px',
+              }}>
+                {[
+                  { icon: '\uD83D\uDE9A', text: 'Free Shipping' },
+                  { icon: '\uD83D\uDC30', text: 'Cruelty Free' },
+                  { icon: '\uD83D\uDD2C', text: 'Derm Tested' },
+                  { icon: '\uD83C\uDF3F', text: 'Clean' },
+                ].map((badge, i) => (
+                  <div key={i} style={{ textAlign: 'center', fontSize: '9px', color: 'var(--brown)' }}>
+                    <div style={{ fontSize: '16px', marginBottom: '2px' }}>{badge.icon}</div>
+                    {badge.text}
+                  </div>
+                ))}
+              </div>
+
+              {/* Accordion Preview */}
+              {previewAccordions.length > 0 && (
+                <div style={{ borderTop: '1px solid #eee' }}>
+                  {previewAccordions.map(section => (
+                    <div key={section.id} style={{ borderBottom: '1px solid #eee' }}>
+                      <button
+                        onClick={() => setPreviewAccordion(previewAccordion === section.id ? null : section.id)}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '12px 0',
+                          background: 'none',
+                          border: 'none',
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          color: 'var(--brown-dark)',
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-body)',
+                        }}
+                      >
+                        <span>{section.title}</span>
+                        <span style={{ color: 'var(--brown-light)', fontSize: '14px' }}>
+                          {previewAccordion === section.id ? '\u2212' : '+'}
+                        </span>
+                      </button>
+                      {previewAccordion === section.id && (
+                        <div style={{ padding: '0 0 12px', fontSize: '12px', lineHeight: 1.7, color: 'var(--brown)', whiteSpace: 'pre-wrap' }}>
+                          {section.content}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className={styles.previewDetails}>
                 <div className={styles.previewDetailItem}>
                   Category: {category.replace('-', ' ')}

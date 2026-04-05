@@ -244,6 +244,11 @@ interface DbProduct {
   rating: number
   review_count: number
   in_stock: boolean
+  ingredients: string
+  how_to_use: string
+  key_benefits: string[]
+  related_product_ids: string[]
+  variants: { name: string; options: string[] }[]
 }
 
 function dbToProduct(db: DbProduct): Product {
@@ -260,6 +265,11 @@ function dbToProduct(db: DbProduct): Product {
     rating: db.rating,
     reviewCount: db.review_count,
     inStock: db.in_stock,
+    ingredients: db.ingredients || '',
+    howToUse: db.how_to_use || '',
+    keyBenefits: db.key_benefits || [],
+    relatedProductIds: db.related_product_ids || [],
+    variants: db.variants || [],
   }
 }
 
