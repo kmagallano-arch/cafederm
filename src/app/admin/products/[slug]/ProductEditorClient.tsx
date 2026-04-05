@@ -670,6 +670,14 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
           {saved && <span className={styles.savedMsg}>Saved!</span>}
           {!isNew && (
             <button
+              className={styles.previewBtn}
+              onClick={() => window.open(`/products/${formSlug}`, '_blank')}
+            >
+              Preview ↗
+            </button>
+          )}
+          {!isNew && (
+            <button
               className={styles.deleteBtn}
               onClick={() => setShowDeleteConfirm(true)}
             >
