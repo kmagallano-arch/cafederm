@@ -253,6 +253,32 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
     setImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  const [enhancingIndex, setEnhancingIndex] = useState<number | null>(null)
+
+  async function enhanceImage(index: number) {
+    const url = images[index]
+    if (!url) return
+    setEnhancingIndex(index)
+    try {
+      const res = await fetch('/api/admin/enhance-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: url }),
+        signal: AbortSignal.timeout(60000),
+      })
+      const data = await res.json()
+      if (data.enhancedUrl) {
+        // Replace the image at this index with the enhanced version
+        setImages(prev => prev.map((u, i) => i === index ? data.enhancedUrl : u))
+      } else if (data.error) {
+        alert(`Enhancement failed: ${data.error}`)
+      }
+    } catch {
+      alert('Enhancement failed — try again')
+    }
+    setEnhancingIndex(null)
+  }
+
   // Key benefits helpers
   function addBenefit() {
     const trimmed = newBenefit.trim()
@@ -790,6 +816,14 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
                         type="button"
                       >
                         &times;
+                      </button>
+                      <button
+                        className={styles.imageEnhanceBtn}
+                        onClick={() => enhanceImage(i)}
+                        type="button"
+                        disabled={enhancingIndex !== null}
+                      >
+                        {enhancingIndex === i ? '...' : '✨'}
                       </button>
                     </div>
                   ))}
