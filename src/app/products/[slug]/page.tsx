@@ -1,30 +1,30 @@
 import { notFound } from 'next/navigation'
-import { getProductBySlug, getProductsByCategory, products } from '@/data/products'
+import { fetchProductBySlug, fetchProductsByCategory, fetchProducts } from '@/data/products'
 import ProductPageClient from './ProductPageClient'
 
-export function generateStaticParams() {
-  return products.map(p => ({ slug: p.slug }))
-}
+export const revalidate = 60
 
-export function generateMetadata({ params }: { params: { slug: string } }) {
-  const product = getProductBySlug(params.slug)
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const product = await fetchProductBySlug(params.slug)
   if (!product) return { title: 'Not Found' }
   return { title: `${product.name} — CafeDerm`, description: product.description }
 }
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
-  const product = getProductBySlug(params.slug)
+export default async function ProductPage({ params }: { params: { slug: string } }) {
+  const product = await fetchProductBySlug(params.slug)
   if (!product) notFound()
 
+  const allProducts = await fetchProducts()
+
   // Get related products: same category, excluding current
-  const related = getProductsByCategory(product.category)
-    .filter(p => p.id !== product.id)
+  const related = allProducts
+    .filter(p => p.category === product.category && p.id !== product.id)
     .slice(0, 4)
 
   // Get ritual products
   const ritualProducts = product.ritualProductIds?.length
-    ? products.filter(p => product.ritualProductIds!.includes(p.id))
-    : getProductsByCategory(product.category).filter(p => p.id !== product.id).slice(0, 4)
+    ? allProducts.filter(p => product.ritualProductIds!.includes(p.id))
+    : related
 
   return <ProductPageClient product={product} relatedProducts={related} ritualProducts={ritualProducts} />
 }

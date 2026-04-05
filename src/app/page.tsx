@@ -6,13 +6,13 @@ import FeaturedBanner from '@/components/home/FeaturedBanner'
 import ShopBySection from '@/components/home/ShopBySection'
 import AboutSection from '@/components/home/AboutSection'
 import MediaGrid from '@/components/home/MediaGrid'
-import { getProductsByCategory } from '@/data/products'
+import { fetchProductsByCategory } from '@/data/products'
 import { fetchSiteContent } from '@/lib/content'
 
 export const revalidate = 60 // revalidate every 60 seconds
 
 export default async function Home() {
-  const trending = getProductsByCategory('best-sellers')
+  const trending = await fetchProductsByCategory('best-sellers')
   const content = await fetchSiteContent()
 
   return (

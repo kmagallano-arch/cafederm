@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { products } from '@/data/products'
 import { Product } from '@/types'
 import { useCart } from '@/context/CartContext'
 import ProductCard from '@/components/shared/ProductCard'
@@ -17,28 +16,52 @@ const categories: { key: Category; label: string }[] = [
   { key: 'bundles', label: 'Bundles' },
 ]
 
-function getProductsForCategory(cat: Category): Product[] {
+function filterProducts(allProducts: Product[], cat: Category): Product[] {
   switch (cat) {
     case 'trending':
-      return products.filter(p => p.tags.includes('best-seller')).slice(0, 4)
+      return allProducts.filter(p => p.tags.includes('best-seller')).slice(0, 4)
     case 'new-arrivals':
-      return products.filter(p => p.tags.includes('new')).slice(0, 4)
+      return allProducts.filter(p => p.tags.includes('new')).slice(0, 4)
     case 'face-care':
-      return products.filter(p => p.category === 'face-care').slice(0, 4)
+      return allProducts.filter(p => p.category === 'face-care').slice(0, 4)
     case 'body-care':
-      return products.filter(p => p.category === 'body-care').slice(0, 4)
+      return allProducts.filter(p => p.category === 'body-care').slice(0, 4)
     case 'bundles':
-      return products.filter(p => p.category === 'bundles').slice(0, 4)
+      return allProducts.filter(p => p.category === 'bundles').slice(0, 4)
     default:
-      return products.slice(0, 4)
+      return allProducts.slice(0, 4)
   }
 }
 
 export default function ShopBySection() {
   const [active, setActive] = useState<Category>('trending')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [allProducts, setAllProducts] = useState<Product[]>([])
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { addItem } = useCart()
+
+  // Fetch products from Supabase via API
+  useEffect(() => {
+    fetch('/api/admin/products')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mapped = data.map((p: Record<string, unknown>) => ({
+            ...p,
+            compareAtPrice: p.compare_at_price as number | undefined,
+            reviewCount: p.review_count as number,
+            inStock: p.in_stock as boolean,
+            keyBenefits: p.key_benefits as string[] || [],
+            howToUse: p.how_to_use as string || '',
+            recommendedFor: p.recommended_for as string[] || [],
+            ritualProductIds: p.ritual_product_ids as string[] || [],
+            subscribeDiscount: p.subscribe_discount as number || 20,
+          })) as Product[]
+          setAllProducts(mapped)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -51,7 +74,7 @@ export default function ShopBySection() {
   }, [])
 
   const activeLabel = categories.find(c => c.key === active)?.label || 'Trending'
-  const displayProducts = getProductsForCategory(active)
+  const displayProducts = filterProducts(allProducts, active)
 
   return (
     <section className={styles.section}>
