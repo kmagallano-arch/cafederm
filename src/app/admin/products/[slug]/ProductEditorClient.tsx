@@ -88,6 +88,13 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
   const [deleting, setDeleting] = useState(false)
   const [previewAccordion, setPreviewAccordion] = useState<string | null>('description')
 
+  // Alibaba import state
+  const [alibabaUrl, setAlibabaUrl] = useState('')
+  const [alibabaImages, setAlibabaImages] = useState<{ url: string; originalUrl: string; brandingWarning: string | null }[]>([])
+  const [alibabaLoading, setAlibabaLoading] = useState(false)
+  const [alibabaError, setAlibabaError] = useState('')
+  const [usedAlibabaImages, setUsedAlibabaImages] = useState<Set<string>>(new Set())
+
   // Check session on mount
   useEffect(() => {
     const saved = sessionStorage.getItem('cafederm_admin_auth')
@@ -247,6 +254,42 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
       e.preventDefault()
       addBenefit()
     }
+  }
+
+  // Alibaba import
+  const handleAlibabaImport = async () => {
+    if (!alibabaUrl) return
+    setAlibabaLoading(true)
+    setAlibabaError('')
+    setAlibabaImages([])
+    setUsedAlibabaImages(new Set())
+    try {
+      const res = await fetch('/api/admin/import-alibaba', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: alibabaUrl }),
+      })
+      const data = await res.json()
+      if (data.error) {
+        setAlibabaError(data.error)
+      } else {
+        setAlibabaImages(data.images || [])
+      }
+    } catch {
+      setAlibabaError('Failed to import images')
+    }
+    setAlibabaLoading(false)
+  }
+
+  const useAlibabaImage = (url: string) => {
+    setImages(prev => [...prev.filter(u => u), url])
+    setUsedAlibabaImages(prev => { const next = new Set(Array.from(prev)); next.add(url); return next })
+  }
+
+  const useAllAlibabaImages = () => {
+    const cleanImages = alibabaImages.filter(img => !img.brandingWarning).map(img => img.url)
+    setImages(prev => [...prev.filter(u => u), ...cleanImages])
+    setUsedAlibabaImages(new Set(cleanImages))
   }
 
   // Related products toggle
@@ -675,6 +718,67 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
           {/* Images */}
           <div className={styles.editorSection}>
             <div className={styles.editorSectionTitle}>Images</div>
+
+            {/* Alibaba Import */}
+            <div className={styles.alibabaSection}>
+              <div className={styles.alibabaSectionTitle}>Import from Alibaba</div>
+              <div className={styles.alibabaInputRow}>
+                <input
+                  className={styles.alibabaInput}
+                  type="text"
+                  value={alibabaUrl}
+                  onChange={e => setAlibabaUrl(e.target.value)}
+                  placeholder="Paste Alibaba product URL..."
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAlibabaImport() } }}
+                />
+                <button
+                  className={styles.alibabaBtn}
+                  onClick={handleAlibabaImport}
+                  disabled={alibabaLoading || !alibabaUrl}
+                >
+                  {alibabaLoading ? 'Importing...' : 'Import Images'}
+                </button>
+              </div>
+              {alibabaLoading && (
+                <div className={styles.alibabaLoading}>
+                  Scraping product page and analyzing images...
+                </div>
+              )}
+              {alibabaError && (
+                <div className={styles.alibabaError}>{alibabaError}</div>
+              )}
+              {alibabaImages.length > 0 && (
+                <>
+                  <div className={styles.alibabaResults}>
+                    {alibabaImages.map((img, i) => (
+                      <div key={i} className={styles.alibabaImageCard}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={img.url} alt={`Alibaba image ${i + 1}`} />
+                        {img.brandingWarning && (
+                          <div className={styles.alibabaWarning}>{img.brandingWarning}</div>
+                        )}
+                        <div className={styles.alibabaImageActions}>
+                          {usedAlibabaImages.has(img.url) ? (
+                            <button className={styles.alibabaUsedBtn} disabled>Added</button>
+                          ) : (
+                            <button
+                              className={styles.alibabaUseBtn}
+                              onClick={() => useAlibabaImage(img.url)}
+                            >
+                              Use
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button className={styles.alibabaUseAll} onClick={useAllAlibabaImages}>
+                    Use All Clean Images
+                  </button>
+                </>
+              )}
+            </div>
+
             <div className={styles.imageSection}>
               {images.length > 0 && (
                 <div className={styles.imageGrid}>

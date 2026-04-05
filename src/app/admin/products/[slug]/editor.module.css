@@ -682,6 +682,173 @@
   cursor: not-allowed;
 }
 
+/* Alibaba import */
+.alibabaSection {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
+  border-radius: 8px;
+}
+
+.alibabaSectionTitle {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--brown);
+  margin-bottom: 12px;
+}
+
+.alibabaInputRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.alibabaInput {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--cream-dark);
+  background: var(--white, #fff);
+  font-size: 12px;
+  font-family: var(--font-body);
+  outline: none;
+  border-radius: 6px;
+}
+
+.alibabaInput:focus {
+  border-color: var(--brown-light);
+}
+
+.alibabaBtn {
+  padding: 10px 20px;
+  background: var(--brown-dark);
+  color: var(--cream);
+  border: none;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: opacity 0.2s;
+}
+
+.alibabaBtn:hover {
+  opacity: 0.9;
+}
+
+.alibabaBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.alibabaResults {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.alibabaImageCard {
+  position: relative;
+  border: 1px solid var(--cream-dark);
+  overflow: hidden;
+  background: white;
+  border-radius: 6px;
+}
+
+.alibabaImageCard img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+
+.alibabaImageActions {
+  padding: 6px;
+  display: flex;
+  gap: 4px;
+}
+
+.alibabaUseBtn {
+  flex: 1;
+  padding: 6px;
+  background: var(--brown-dark);
+  color: var(--cream);
+  border: none;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: var(--font-body);
+  border-radius: 4px;
+  transition: opacity 0.2s;
+}
+
+.alibabaUseBtn:hover {
+  opacity: 0.9;
+}
+
+.alibabaUsedBtn {
+  flex: 1;
+  padding: 6px;
+  background: var(--brown-light, #a08060);
+  color: var(--cream);
+  border: none;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: default;
+  font-family: var(--font-body);
+  border-radius: 4px;
+}
+
+.alibabaWarning {
+  font-size: 9px;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 3px 6px;
+  margin: 0 6px 6px;
+  border-radius: 2px;
+}
+
+.alibabaUseAll {
+  margin-top: 8px;
+  padding: 10px;
+  width: 100%;
+  background: var(--brown);
+  color: var(--cream);
+  border: none;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: var(--font-body);
+  border-radius: 6px;
+  transition: opacity 0.2s;
+}
+
+.alibabaUseAll:hover {
+  opacity: 0.9;
+}
+
+.alibabaLoading {
+  text-align: center;
+  padding: 20px;
+  color: var(--brown);
+  font-size: 12px;
+}
+
+.alibabaError {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
 /* Responsive */
 @media (max-width: 999px) {
   .content {
