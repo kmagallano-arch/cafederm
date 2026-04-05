@@ -8,20 +8,66 @@ export async function POST(request: Request) {
     const { url } = await request.json()
     if (!url) return NextResponse.json({ error: 'No URL provided' }, { status: 400 })
 
-    // Step 1: Fetch Alibaba page
+    // Step 1: Fetch Alibaba page with full browser-like headers
     const pageRes = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Sec-Ch-Ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"macOS"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
       },
     })
 
     if (!pageRes.ok) return NextResponse.json({ error: 'Failed to fetch page' }, { status: 500 })
     const html = await pageRes.text()
 
+    // If Alibaba returned a short/blocked page, try the product ID approach
+    const productIdMatch = url.match(/_(\d+)\.html/)
+    const productId = productIdMatch?.[1]
+
+    // Also try fetching the mobile/offer API for more data
+    let extraImages: string[] = []
+    if (productId) {
+      try {
+        const offerRes = await fetch(`https://www.alibaba.com/product-detail/api/offer/${productId}/detail.json`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+            'Accept': 'application/json',
+            'Referer': url,
+          },
+        })
+        if (offerRes.ok) {
+          const offerData = await offerRes.json()
+          // Extract images from API response
+          const apiImages = JSON.stringify(offerData)
+          const apiImgPattern = /https?:\/\/[a-z0-9]+\.alicdn\.com\/[^"'\\,\s]+\.(jpg|jpeg|png|webp)/gi
+          let m
+          while ((m = apiImgPattern.exec(apiImages)) !== null) {
+            if (!/avatar|logo|icon|flag|tps-|TB1/i.test(m[0])) {
+              extraImages.push(m[0])
+            }
+          }
+        }
+      } catch {
+        // API fallback failed, continue with HTML
+      }
+    }
+
     // Step 2: Extract image URLs (original, unmodified)
-    const imageUrls = extractAlibabaImages(html)
+    const htmlImages = extractAlibabaImages(html)
+    // Merge with API-fetched images, dedup
+    const allImgSet = new Set(htmlImages.concat(extraImages))
+    const imageUrls = Array.from(allImgSet).slice(0, 20)
 
     // Step 3: Scrape product text data from the page
     const scrapedData = scrapeProductData(html)
