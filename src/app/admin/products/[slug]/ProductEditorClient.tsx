@@ -254,6 +254,8 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
   }
 
   const [enhancingIndex, setEnhancingIndex] = useState<number | null>(null)
+  const [enhancePrompt, setEnhancePrompt] = useState('')
+  const [showEnhancePrompt, setShowEnhancePrompt] = useState<number | null>(null)
 
   async function enhanceImage(index: number) {
     const url = images[index]
@@ -263,13 +265,14 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
       const res = await fetch('/api/admin/enhance-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl: url }),
-        signal: AbortSignal.timeout(60000),
+        body: JSON.stringify({ imageUrl: url, prompt: enhancePrompt || undefined }),
+        signal: AbortSignal.timeout(120000),
       })
       const data = await res.json()
       if (data.enhancedUrl) {
-        // Replace the image at this index with the enhanced version
         setImages(prev => prev.map((u, i) => i === index ? data.enhancedUrl : u))
+        setShowEnhancePrompt(null)
+        setEnhancePrompt('')
       } else if (data.error) {
         alert(`Enhancement failed: ${data.error}`)
       }
@@ -807,24 +810,51 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
               {images.length > 0 && (
                 <div className={styles.imageGrid}>
                   {images.map((url, i) => (
-                    <div key={i} className={styles.imageItem}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt={`Product image ${i + 1}`} />
-                      <button
-                        className={styles.imageRemoveBtn}
-                        onClick={() => removeImage(i)}
-                        type="button"
-                      >
-                        &times;
-                      </button>
-                      <button
-                        className={styles.imageEnhanceBtn}
-                        onClick={() => enhanceImage(i)}
-                        type="button"
-                        disabled={enhancingIndex !== null}
-                      >
-                        {enhancingIndex === i ? '...' : '✨'}
-                      </button>
+                    <div key={i} className={styles.imageItemWrapper}>
+                      <div className={styles.imageItem}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt={`Product image ${i + 1}`} />
+                        <button
+                          className={styles.imageRemoveBtn}
+                          onClick={() => removeImage(i)}
+                          type="button"
+                        >
+                          &times;
+                        </button>
+                        <button
+                          className={styles.imageEnhanceBtn}
+                          onClick={() => {
+                            if (showEnhancePrompt === i) {
+                              setShowEnhancePrompt(null)
+                            } else {
+                              setShowEnhancePrompt(i)
+                              setEnhancePrompt('')
+                            }
+                          }}
+                          type="button"
+                          disabled={enhancingIndex !== null}
+                        >
+                          {enhancingIndex === i ? '...' : '✨'}
+                        </button>
+                      </div>
+                      {showEnhancePrompt === i && (
+                        <div className={styles.enhancePromptBox}>
+                          <textarea
+                            className={styles.enhancePromptInput}
+                            placeholder="Tell AI what to do, e.g. 'Replace brand name with CafeDerm, keep everything else the same' or 'Remove background and add white background'"
+                            value={enhancePrompt}
+                            onChange={e => setEnhancePrompt(e.target.value)}
+                            rows={3}
+                          />
+                          <button
+                            className={styles.enhancePromptBtn}
+                            onClick={() => enhanceImage(i)}
+                            disabled={enhancingIndex !== null}
+                          >
+                            {enhancingIndex === i ? 'Enhancing...' : 'Enhance'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

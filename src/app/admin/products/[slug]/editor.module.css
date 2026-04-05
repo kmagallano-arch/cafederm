@@ -336,6 +336,57 @@
   transform: none;
 }
 
+.imageItemWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.enhancePromptBox {
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.enhancePromptInput {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--cream-dark);
+  background: var(--cream);
+  font-size: 11px;
+  font-family: var(--font-body);
+  color: var(--black);
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.enhancePromptInput:focus {
+  border-color: var(--brown-light);
+}
+
+.enhancePromptBtn {
+  padding: 8px 16px;
+  background: var(--brown-dark);
+  color: var(--cream);
+  border: none;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+  align-self: flex-end;
+}
+
+.enhancePromptBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .uploadArea {
   border: 2px dashed var(--cream-dark);
   padding: 24px;

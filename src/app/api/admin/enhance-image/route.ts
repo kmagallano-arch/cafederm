@@ -5,9 +5,12 @@ export const maxDuration = 60
 
 export async function POST(request: Request) {
   try {
-    const { imageUrl } = await request.json()
+    const { imageUrl, prompt: customPrompt } = await request.json()
     if (!imageUrl) return NextResponse.json({ error: 'No image URL provided' }, { status: 400 })
     if (!process.env.GEMINI_API_KEY) return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 })
+
+    const defaultPrompt = 'Edit this product photo. Replace any visible brand name, logo, or supplier text on the product label with the brand name "CafeDerm" in an elegant, minimal serif font. Keep EVERYTHING else exactly the same — same bottle, same background, same styling, same decorative elements (leaves, coffee beans, etc). Only change the text on the label to say "CafeDerm" and keep the product type text (like "Eye Serum", "Face Cream" etc). The result should look like this is a CafeDerm branded product photo.'
+    const editPrompt = customPrompt || defaultPrompt
 
     // Download the original image
     const imgRes = await fetch(imageUrl)
@@ -25,7 +28,7 @@ export async function POST(request: Request) {
         contents: [{
           parts: [
             {
-              text: 'Edit this product photo. Replace any visible brand name, logo, or supplier text on the product label with the brand name "CafeDerm" in an elegant, minimal serif font. Keep EVERYTHING else exactly the same — same bottle, same background, same styling, same decorative elements (leaves, coffee beans, etc). Only change the text on the label to say "CafeDerm" and keep the product type text (like "Eye Serum", "Face Cream" etc). The result should look like this is a CafeDerm branded product photo.',
+              text: editPrompt,
             },
             {
               inline_data: { mime_type: 'image/jpeg', data: base64 },
