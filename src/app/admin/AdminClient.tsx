@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import styles from './admin.module.css'
 import { defaultContent } from '@/lib/content'
 import type { SiteContent } from '@/lib/content'
@@ -717,9 +718,14 @@ export default function AdminClient() {
           <>
             <div className={styles.toolbar}>
               <h2 className={styles.toolbarTitle}>Products</h2>
-              <button className={styles.addBtn} onClick={openAddModal}>
-                + Add Product
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <Link href="/admin/products/new" className={styles.addBtn} style={{ textDecoration: 'none' }}>
+                  + New Product
+                </Link>
+                <button className={styles.addBtn} onClick={openAddModal}>
+                  + Quick Add
+                </button>
+              </div>
             </div>
 
             {loading ? (
@@ -745,7 +751,13 @@ export default function AdminClient() {
                     {products.map(product => (
                       <tr key={product.id}>
                         <td className={styles.td}>
-                          <span className={styles.productName}>{product.name}</span>
+                          <Link
+                            href={`/admin/products/${product.slug}`}
+                            className={styles.productName}
+                            style={{ textDecoration: 'none', cursor: 'pointer' }}
+                          >
+                            {product.name}
+                          </Link>
                         </td>
                         <td className={styles.td}>
                           <span className={styles.badge}>{product.category}</span>
@@ -772,8 +784,15 @@ export default function AdminClient() {
                         </td>
                         <td className={styles.td}>
                           <div className={styles.actions}>
-                            <button className={styles.editBtn} onClick={() => openEditModal(product)}>
+                            <Link
+                              href={`/admin/products/${product.slug}`}
+                              className={styles.editBtn}
+                              style={{ textDecoration: 'none', display: 'inline-block' }}
+                            >
                               Edit
+                            </Link>
+                            <button className={styles.editBtn} onClick={() => openEditModal(product)}>
+                              Quick
                             </button>
                             <button className={styles.deleteBtn} onClick={() => setDeleteTarget(product)}>
                               Delete

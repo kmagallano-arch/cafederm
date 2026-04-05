@@ -245,6 +245,11 @@
 .productName {
   font-weight: 500;
   color: var(--brown-dark);
+  transition: color 0.15s;
+}
+
+.productName:hover {
+  color: var(--brown-light);
 }
 
 .badge {
