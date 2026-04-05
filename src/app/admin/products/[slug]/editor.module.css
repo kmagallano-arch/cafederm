@@ -358,6 +358,47 @@
   gap: 0;
 }
 
+.mainBadge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: var(--brown-dark);
+  color: var(--cream);
+  font-size: 8px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  padding: 3px 6px;
+  z-index: 2;
+}
+
+.imageControls {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.imageControlBtn {
+  flex: 1;
+  padding: 4px;
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
+  font-size: 10px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  color: var(--brown);
+  transition: background 0.2s;
+}
+
+.imageControlBtn:hover {
+  background: var(--cream-dark);
+  color: var(--brown-dark);
+}
+
+.imageControlBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .enhancePromptBox {
   background: var(--white);
   border: 1px solid var(--cream-dark);

@@ -290,6 +290,25 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
     setImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  function setAsMainImage(index: number) {
+    setImages(prev => {
+      const img = prev[index]
+      return [img, ...prev.filter((_, i) => i !== index)]
+    })
+  }
+
+  function moveImage(index: number, direction: 'up' | 'down') {
+    setImages(prev => {
+      const arr = [...prev]
+      const target = direction === 'up' ? index - 1 : index + 1
+      if (target < 0 || target >= arr.length) return arr
+      const temp = arr[target]
+      arr[target] = arr[index]
+      arr[index] = temp
+      return arr
+    })
+  }
+
   const [enhancingIndex, setEnhancingIndex] = useState<number | null>(null)
   const [enhancePrompt, setEnhancePrompt] = useState('')
   const [showEnhancePrompt, setShowEnhancePrompt] = useState<number | null>(null)
@@ -1021,6 +1040,7 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
                   {images.map((url, i) => (
                     <div key={i} className={styles.imageItemWrapper}>
                       <div className={styles.imageItem}>
+                        {i === 0 && <span className={styles.mainBadge}>MAIN</span>}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={url} alt={`Product image ${i + 1}`} />
                         <button
@@ -1044,6 +1064,19 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
                           disabled={enhancingIndex !== null}
                         >
                           {enhancingIndex === i ? '...' : '\u2728'}
+                        </button>
+                      </div>
+                      <div className={styles.imageControls}>
+                        {i !== 0 && (
+                          <button className={styles.imageControlBtn} onClick={() => setAsMainImage(i)} type="button" title="Set as main image">
+                            ★ Main
+                          </button>
+                        )}
+                        <button className={styles.imageControlBtn} onClick={() => moveImage(i, 'up')} type="button" disabled={i === 0} title="Move left">
+                          ←
+                        </button>
+                        <button className={styles.imageControlBtn} onClick={() => moveImage(i, 'down')} type="button" disabled={i === images.length - 1} title="Move right">
+                          →
                         </button>
                       </div>
                       {showEnhancePrompt === i && (
