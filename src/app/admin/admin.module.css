@@ -782,6 +782,119 @@
   margin-left: 0.75rem;
 }
 
+/* Auto-Import */
+.autoImportSection {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px 0;
+}
+
+.autoImportTitle {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  color: var(--brown-dark);
+  margin: 0 0 8px;
+}
+
+.autoImportSubtitle {
+  font-size: 13px;
+  color: var(--brown);
+  margin: 0 0 32px;
+  line-height: 1.6;
+}
+
+.autoImportForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.autoImportBtn {
+  padding: 16px;
+  background: var(--brown-dark);
+  color: var(--cream);
+  border: none;
+  font-size: 12px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.2s;
+}
+
+.autoImportBtn:hover {
+  background: var(--brown);
+}
+
+.autoImportBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.autoImportProgress {
+  margin-top: 24px;
+}
+
+.autoImportStep {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 13px;
+  color: var(--brown);
+}
+
+.autoImportStepActive {
+  color: var(--brown-dark);
+  font-weight: 500;
+}
+
+.autoImportStepDone {
+  color: var(--brown-light);
+}
+
+.autoImportStepIcon {
+  width: 24px;
+  text-align: center;
+}
+
+.autoImportResult {
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--cream);
+  border-radius: 10px;
+}
+
+.autoImportResultTitle {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--brown-dark);
+  margin: 0 0 8px;
+}
+
+.autoImportResultMeta {
+  font-size: 12px;
+  color: var(--brown);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.autoImportResultLink {
+  color: var(--brown-dark);
+  text-decoration: underline;
+  font-size: 13px;
+}
+
+.autoImportError {
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: 16px;
+  padding: 12px;
+  background: #fef2f2;
+  border-radius: 6px;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .content {

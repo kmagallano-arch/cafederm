@@ -16,6 +16,10 @@ export interface Product {
   keyBenefits?: string[]
   relatedProductIds?: string[]
   variants?: { name: string; options: string[] }[]
+  recommendedFor?: string[]
+  awards?: string
+  subscribeDiscount?: number
+  ritualProductIds?: string[]
 }
 
 export interface Collection {

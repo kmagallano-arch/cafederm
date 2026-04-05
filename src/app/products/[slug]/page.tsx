@@ -21,5 +21,10 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     .filter(p => p.id !== product.id)
     .slice(0, 4)
 
-  return <ProductPageClient product={product} relatedProducts={related} />
+  // Get ritual products
+  const ritualProducts = product.ritualProductIds?.length
+    ? products.filter(p => product.ritualProductIds!.includes(p.id))
+    : getProductsByCategory(product.category).filter(p => p.id !== product.id).slice(0, 4)
+
+  return <ProductPageClient product={product} relatedProducts={related} ritualProducts={ritualProducts} />
 }

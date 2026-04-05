@@ -1,62 +1,40 @@
-/* Product Detail Page — Naturium-style layout */
+/* Product Detail Page — TruSkin-style funnel with CafeDerm "Latte Luxe" palette */
 
 .page {
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 40px var(--container-padding) 80px;
+  padding: 40px var(--container-padding) 0;
 }
 
-/* ─── Top Section: Gallery + Info ─── */
+/* ─── Section 1: Top — Gallery + Info ─── */
 .topSection {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 60px;
-  margin-bottom: 60px;
+  margin-bottom: 0;
+  padding-bottom: 60px;
 }
 
-/* ─── Image Gallery (left) ─── */
-.gallery {
+/* ─── Gallery (left column) ─── */
+.galleryWrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  position: sticky;
+  top: 100px;
+  align-self: flex-start;
+}
+
+.thumbnailStrip {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.mainImageContainer {
-  aspect-ratio: 1;
-  background: var(--cream);
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: zoom-in;
-}
-
-.mainImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  aspect-ratio: auto;
-  max-height: 600px;
-}
-
-.mainImagePlaceholder {
-  font-family: var(--font-heading);
-  font-size: 22px;
-  color: var(--brown-light);
-}
-
-.thumbnails {
-  display: flex;
   gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .thumbnail {
-  width: 60px;
-  height: 60px;
-  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
   border-radius: 8px;
   overflow: hidden;
   border: 2px solid transparent;
@@ -64,6 +42,7 @@
   background: var(--cream);
   padding: 0;
   transition: border-color 0.2s;
+  flex-shrink: 0;
 }
 
 .thumbnail img {
@@ -80,26 +59,42 @@
   border-color: var(--brown-dark);
 }
 
-/* ─── Product Info (right) ─── */
+.mainImageContainer {
+  flex: 1;
+  aspect-ratio: 1;
+  background: var(--cream);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-in;
+  position: relative;
+}
+
+.mainImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.mainImageContainer:hover .mainImage {
+  transform: scale(1.08);
+}
+
+.mainImagePlaceholder {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--brown-light);
+}
+
+/* ─── Product Info (right column) ─── */
 .info {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding-top: 8px;
-}
-
-.badge {
-  display: inline-block;
-  background: var(--brown-dark);
-  color: var(--cream);
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 5px 14px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  align-self: flex-start;
-  border-radius: 3px;
+  padding-top: 0;
 }
 
 .title {
@@ -107,83 +102,46 @@
   font-size: clamp(28px, 3vw, 40px);
   font-weight: 400;
   color: var(--brown-dark);
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   line-height: 1.15;
 }
 
-.priceRow {
+.ratingRow {
   display: flex;
-  gap: 12px;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-.price {
-  font-size: 22px;
+.stars {
+  font-size: 16px;
+  color: var(--brown-light);
+  letter-spacing: 1px;
+}
+
+.reviewCountLink {
+  font-size: 13px;
+  color: var(--gray);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.priceDisplay {
+  font-size: 24px;
   color: var(--brown-dark);
   font-weight: 600;
+  margin-bottom: 20px;
 }
 
 .comparePrice {
   font-size: 16px;
   color: var(--gray);
   text-decoration: line-through;
+  margin-left: 10px;
+  font-weight: 400;
 }
 
-.rating {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.stars {
-  font-size: 15px;
-  color: var(--brown-light);
-  letter-spacing: 1px;
-}
-
-.reviewCount {
-  font-size: 13px;
-  color: var(--gray);
-}
-
-.shortDescription {
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--brown);
-  margin: 0 0 24px;
-}
-
-/* ─── Key Benefits ─── */
-.benefits {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 24px;
-  padding: 16px 20px;
-  background: var(--cream);
-  border-radius: 10px;
-}
-
-.benefitItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--brown);
-  line-height: 1.5;
-}
-
-.benefitIcon {
-  color: var(--brown-dark);
-  font-weight: 700;
-  font-size: 14px;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-/* ─── Variant Picker ─── */
+/* ─── Variant Pills ─── */
 .variantSection {
   margin-bottom: 20px;
 }
@@ -198,32 +156,142 @@
   margin-bottom: 10px;
 }
 
-.variantOptions {
+.variantPills {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.variantOption {
-  padding: 10px 20px;
-  border: 1px solid var(--cream-dark);
+.variantPill {
+  padding: 10px 22px;
+  border: 1.5px solid var(--cream-dark);
   background: var(--white);
   font-size: 13px;
   font-family: var(--font-body);
   color: var(--brown);
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 50px;
   transition: all 0.2s;
+  font-weight: 500;
 }
 
-.variantOption:hover {
+.variantPill:hover {
   border-color: var(--brown-light);
 }
 
-.variantOptionActive {
+.variantPillActive {
   border-color: var(--brown-dark);
   background: var(--brown-dark);
   color: var(--cream);
+}
+
+/* ─── Purchase Options ─── */
+.purchaseOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 20px;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.purchaseOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--cream-dark);
+  position: relative;
+}
+
+.purchaseOption:last-child {
+  border-bottom: none;
+}
+
+.purchaseOption:hover {
+  background: var(--cream);
+}
+
+.purchaseOptionActive {
+  background: var(--cream);
+}
+
+.purchaseOptionRadio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--cream-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+
+.purchaseOptionActive .purchaseOptionRadio {
+  border-color: var(--brown-dark);
+}
+
+.purchaseOptionRadioDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--brown-dark);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.purchaseOptionActive .purchaseOptionRadioDot {
+  opacity: 1;
+}
+
+.purchaseOptionLabel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--brown-dark);
+  font-weight: 500;
+}
+
+.purchaseOptionPrice {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brown-dark);
+  white-space: nowrap;
+}
+
+.saveBadge {
+  display: inline-block;
+  background: var(--brown-light);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.subscribeFrequency {
+  margin-left: 32px;
+  padding: 0 18px 16px;
+}
+
+.subscribeFrequency select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  color: var(--brown-dark);
+  background: var(--white);
+  cursor: pointer;
+  appearance: auto;
 }
 
 /* ─── Quantity + Add to Cart ─── */
@@ -231,13 +299,13 @@
   display: flex;
   gap: 12px;
   align-items: stretch;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .quantitySelector {
   display: flex;
   align-items: center;
-  border: 1px solid var(--cream-dark);
+  border: 1.5px solid var(--cream-dark);
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
@@ -293,46 +361,14 @@
   background: var(--brown);
 }
 
-/* ─── Trust Badges ─── */
-.trustBadges {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  padding-top: 20px;
-  border-top: 1px solid var(--cream-dark);
-}
-
-.trustBadge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 6px;
-}
-
-.trustIcon {
-  font-size: 22px;
-}
-
-.trustBadge span:last-child {
-  font-size: 10px;
-  color: var(--brown);
-  line-height: 1.4;
-  letter-spacing: 0.3px;
-}
-
-/* ─── Accordion Sections ─── */
+/* ─── Accordions (inside info column) ─── */
 .accordions {
-  max-width: 900px;
-  margin: 0 auto 60px;
+  border-top: 1px solid var(--cream-dark);
+  margin-top: 4px;
 }
 
 .accordion {
   border-bottom: 1px solid var(--cream-dark);
-}
-
-.accordion:first-child {
-  border-top: 1px solid var(--cream-dark);
 }
 
 .accordionHeader {
@@ -340,24 +376,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 4px;
+  padding: 18px 4px;
   background: none;
   border: none;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   font-family: var(--font-body);
   color: var(--brown-dark);
   cursor: pointer;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
   transition: color 0.2s;
 }
 
 .accordionHeader:hover {
   color: var(--brown);
-}
-
-.accordionHeaderActive {
-  color: var(--brown-dark);
 }
 
 .accordionArrow {
@@ -372,7 +405,7 @@
 }
 
 .accordionContent {
-  padding: 0 4px 24px;
+  padding: 0 4px 20px;
   font-size: 14px;
   line-height: 1.8;
   color: var(--brown);
@@ -386,15 +419,536 @@
   margin-bottom: 0;
 }
 
-/* ─── Related Products ─── */
-.relatedSection {
-  padding-top: 40px;
+.benefitsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.benefitsList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--brown);
+  line-height: 1.5;
+}
+
+.benefitCheckmark {
+  color: var(--brown-dark);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.freeFromList {
+  margin-top: 16px;
+  padding-top: 14px;
   border-top: 1px solid var(--cream-dark);
+  font-size: 13px;
+  color: var(--brown-light);
+  font-weight: 500;
+}
+
+.recommendedTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recommendedTag {
+  display: inline-block;
+  padding: 8px 18px;
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
+  border-radius: 50px;
+  font-size: 13px;
+  color: var(--brown);
+  font-weight: 500;
+}
+
+/* ─── Section 2: Recommended Ritual ─── */
+.ritualSection {
+  background: var(--cream);
+  padding: 60px var(--container-padding);
+  margin: 0 calc(-1 * var(--container-padding));
+}
+
+.ritualInner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+.ritualHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ritualTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(24px, 2.5vw, 34px);
+  font-weight: 400;
+  color: var(--brown-dark);
+  margin: 0;
+}
+
+.ritualAddAllBtn {
+  padding: 14px 32px;
+  background: var(--brown-dark);
+  color: var(--cream);
+  border: none;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+.ritualAddAllBtn:hover {
+  background: var(--brown);
+}
+
+.ritualGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.ritualCard {
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ritualStep {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--brown-dark);
+  color: var(--cream);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+.ritualCardImage {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ritualCardImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ritualCardImagePlaceholder {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  color: var(--brown-light);
+}
+
+.ritualCardBody {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.ritualCardName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brown-dark);
+  line-height: 1.3;
+}
+
+.ritualCardPrice {
+  font-size: 14px;
+  color: var(--brown);
+  font-weight: 500;
+}
+
+.ritualCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding: 0 16px 16px;
+  cursor: pointer;
+}
+
+.ritualCheckbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brown-dark);
+  cursor: pointer;
+}
+
+.ritualCheckbox span {
+  font-size: 13px;
+  color: var(--brown);
+  font-weight: 500;
+}
+
+/* ─── Section 3: Trust Badges ─── */
+.trustSection {
+  background: var(--cream);
+  padding: 50px var(--container-padding);
+  margin: 0 calc(-1 * var(--container-padding));
+}
+
+.trustGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.trustBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.trustIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.trustLabel {
+  font-size: 12px;
+  color: var(--brown);
+  line-height: 1.4;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+
+/* ─── Section 4: Key Ingredients ─── */
+.ingredientsSection {
+  padding: 70px var(--container-padding);
+  margin: 0 calc(-1 * var(--container-padding));
+  background: var(--white);
+}
+
+.ingredientsSectionInner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+.ingredientsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ingredientsTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(24px, 2.5vw, 34px);
+  font-weight: 400;
+  color: var(--brown-dark);
+  margin: 0;
+}
+
+.ingredientsViewAll {
+  font-size: 14px;
+  color: var(--brown-light);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+}
+
+.ingredientsViewAll:hover {
+  color: var(--brown-dark);
+}
+
+.ingredientsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.ingredientCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ingredientImage {
+  width: 100%;
+  aspect-ratio: 1.2;
+  background: var(--cream);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ingredientImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ingredientImagePlaceholder {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  color: var(--brown-light);
+}
+
+.ingredientName {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--brown-dark);
+  margin: 0;
+}
+
+.ingredientDesc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--brown);
+  margin: 0;
+}
+
+.ingredientBenefits {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ingredientBenefits li {
+  font-size: 13px;
+  color: var(--brown);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.ingredientBenefitDot {
+  color: var(--brown-light);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ─── Section 5: Brand Story ─── */
+.brandSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0 calc(-1 * var(--container-padding));
+  min-height: 480px;
+}
+
+.brandImage {
+  background: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.brandImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brandImagePlaceholder {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  color: var(--brown-light);
+}
+
+.brandContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 80px;
+  background: var(--cream);
+}
+
+.brandTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(26px, 2.5vw, 36px);
+  font-weight: 400;
+  color: var(--brown-dark);
+  margin: 0 0 20px;
+  line-height: 1.2;
+}
+
+.brandText {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--brown);
+  margin: 0 0 28px;
+}
+
+.brandCta {
+  align-self: flex-start;
+  padding: 14px 32px;
+  background: var(--brown-dark);
+  color: var(--cream);
+  border: none;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+
+.brandCta:hover {
+  background: var(--brown);
+}
+
+/* ─── Section 6: Reviews ─── */
+.reviewsSection {
+  padding: 70px var(--container-padding);
+  margin: 0 calc(-1 * var(--container-padding));
+  background: var(--white);
+}
+
+.reviewsSectionInner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+.reviewsTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(24px, 2.5vw, 34px);
+  font-weight: 400;
+  color: var(--brown-dark);
+  text-align: center;
+  margin: 0 0 32px;
+}
+
+.reviewsSummary {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.reviewsSummaryStars {
+  font-size: 30px;
+  color: var(--brown-light);
+  letter-spacing: 3px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.reviewsSummaryText {
+  font-size: 14px;
+  color: var(--gray);
+}
+
+.reviewsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.reviewCard {
+  padding: 28px;
+  background: var(--cream);
+  border-radius: 12px;
+}
+
+.reviewStars {
+  font-size: 14px;
+  color: var(--brown-light);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.reviewText {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--brown);
+  margin: 0 0 16px;
+  font-style: italic;
+}
+
+.reviewMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reviewAuthor {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brown-dark);
+}
+
+.reviewDate {
+  font-size: 12px;
+  color: var(--gray);
+}
+
+/* ─── Section 7: Related Products ─── */
+.relatedSection {
+  padding: 70px var(--container-padding);
+  margin: 0 calc(-1 * var(--container-padding));
+  background: var(--cream);
+}
+
+.relatedInner {
+  max-width: var(--container-max);
+  margin: 0 auto;
 }
 
 .relatedTitle {
   font-family: var(--font-heading);
-  font-size: clamp(24px, 2.5vw, 32px);
+  font-size: clamp(24px, 2.5vw, 34px);
   font-weight: 400;
   color: var(--brown-dark);
   text-align: center;
@@ -414,26 +968,75 @@
     gap: 32px;
   }
 
-  .thumbnails {
+  .galleryWrapper {
+    position: static;
+  }
+
+  .ritualGrid {
+    grid-template-columns: repeat(4, 1fr);
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 16px;
+    padding-bottom: 8px;
+  }
+
+  .ritualCard {
+    min-width: 200px;
+    scroll-snap-align: start;
+  }
+
+  .ingredientsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 20px;
+  }
+
+  .ingredientCard {
+    min-width: 220px;
+  }
+
+  .brandSection {
+    grid-template-columns: 1fr;
+  }
+
+  .brandContent {
+    padding: 40px var(--container-padding);
+  }
+
+  .reviewsGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .relatedGrid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .trustBadges {
+  .trustGrid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 }
 
-@media (max-width: 599px) {
+@media (max-width: 699px) {
   .page {
-    padding: 24px 16px 60px;
+    padding: 24px 16px 0;
   }
 
   .topSection {
     gap: 24px;
+    padding-bottom: 40px;
+  }
+
+  .galleryWrapper {
+    flex-direction: column-reverse;
+  }
+
+  .thumbnailStrip {
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .quantityRow {
@@ -444,8 +1047,39 @@
     align-self: flex-start;
   }
 
+  .ritualGrid {
+    grid-template-columns: repeat(4, 1fr);
+    overflow-x: auto;
+  }
+
+  .ritualCard {
+    min-width: 180px;
+  }
+
+  .ritualHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ingredientsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    overflow-x: auto;
+  }
+
+  .ingredientCard {
+    min-width: 200px;
+  }
+
+  .reviewsGrid {
+    grid-template-columns: 1fr;
+  }
+
   .relatedGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
+  }
+
+  .brandContent {
+    padding: 32px 20px;
   }
 }

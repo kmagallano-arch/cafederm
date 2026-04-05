@@ -249,6 +249,10 @@ interface DbProduct {
   key_benefits: string[]
   related_product_ids: string[]
   variants: { name: string; options: string[] }[]
+  recommended_for: string[]
+  awards: string
+  subscribe_discount: number
+  ritual_product_ids: string[]
 }
 
 function dbToProduct(db: DbProduct): Product {
@@ -270,6 +274,10 @@ function dbToProduct(db: DbProduct): Product {
     keyBenefits: db.key_benefits || [],
     relatedProductIds: db.related_product_ids || [],
     variants: db.variants || [],
+    recommendedFor: db.recommended_for || [],
+    awards: db.awards || '',
+    subscribeDiscount: db.subscribe_discount || 20,
+    ritualProductIds: db.ritual_product_ids || [],
   }
 }
 
