@@ -1,0 +1,546 @@
+/* ─── Page shell ─────────────────────────────────────────── */
+
+.page {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--cream, #F7F1EB);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-body, sans-serif);
+}
+
+/* ─── Top bar ────────────────────────────────────────────── */
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  height: 56px;
+  background: var(--brown-dark, #2C1810);
+  color: var(--cream, #F7F1EB);
+  flex-shrink: 0;
+}
+
+.topBarTitle {
+  font-family: var(--font-heading, serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.topBarActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.backBtn {
+  padding: 0.45rem 1rem;
+  border: 1px solid rgba(247, 241, 235, 0.35);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cream, #F7F1EB);
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.backBtn:hover {
+  background: rgba(247, 241, 235, 0.1);
+}
+
+.saveAllBtn {
+  padding: 0.45rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--brown-light, #A67C52);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.saveAllBtn:hover {
+  opacity: 0.88;
+}
+
+.saveAllBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Layout: preview + sidebar ──────────────────────────── */
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ─── Preview area ───────────────────────────────────────── */
+
+.preview {
+  overflow-y: auto;
+  background: var(--cream-dark, #EDE4D8);
+  padding: 2rem;
+}
+
+.previewSection {
+  position: relative;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.previewSection:hover {
+  border-color: var(--brown-light, #A67C52);
+  box-shadow: 0 0 0 2px rgba(166, 124, 82, 0.2);
+}
+
+.previewSectionActive {
+  border-color: var(--brown-dark, #2C1810) !important;
+  box-shadow: 0 0 0 3px rgba(44, 24, 16, 0.25) !important;
+}
+
+/* ─── Hover overlay ──────────────────────────────────────── */
+
+.previewOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(44, 24, 16, 0.0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.previewSection:hover .previewOverlay {
+  opacity: 1;
+  background: rgba(44, 24, 16, 0.35);
+  pointer-events: auto;
+}
+
+.previewSectionActive .previewOverlay {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.previewOverlayBtn {
+  padding: 0.6rem 1.5rem;
+  background: var(--brown-dark, #2C1810);
+  color: var(--cream, #F7F1EB);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.previewOverlayBtn:hover {
+  transform: scale(1.04);
+}
+
+/* ─── Sidebar ────────────────────────────────────────────── */
+
+.sidebar {
+  background: #fff;
+  border-left: 1px solid var(--cream-dark, #EDE4D8);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebarEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--gray, #888);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--cream-dark, #EDE4D8);
+  flex-shrink: 0;
+}
+
+.sidebarHeaderTitle {
+  font-family: var(--font-heading, serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--brown-dark, #2C1810);
+}
+
+.sidebarCloseBtn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: var(--cream, #F7F1EB);
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: var(--brown-dark, #2C1810);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.sidebarCloseBtn:hover {
+  background: var(--cream-dark, #EDE4D8);
+}
+
+.sidebarBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+}
+
+/* ─── Form fields ────────────────────────────────────────── */
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formLabel {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--brown, #6B4226);
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.formInput {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--cream-dark, #EDE4D8);
+  border-radius: 6px;
+  font-size: 0.88rem;
+  color: var(--brown-dark, #2C1810);
+  background: #fff;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--brown-light, #A67C52);
+}
+
+.formTextarea {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--cream-dark, #EDE4D8);
+  border-radius: 6px;
+  font-size: 0.88rem;
+  color: var(--brown-dark, #2C1810);
+  background: #fff;
+  min-height: 80px;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.formTextarea:focus {
+  outline: none;
+  border-color: var(--brown-light, #A67C52);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ─── Toggle ─────────────────────────────────────────────── */
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.toggle {
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--cream-dark, #EDE4D8);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.toggleOn {
+  background: var(--brown-light, #A67C52);
+}
+
+.toggleOn::after {
+  transform: translateX(18px);
+}
+
+.toggleLabel {
+  font-size: 0.85rem;
+  color: var(--brown-dark, #2C1810);
+}
+
+/* ─── Tag list (marquee items) ───────────────────────────── */
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.tagItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--cream, #F7F1EB);
+  border: 1px solid var(--cream-dark, #EDE4D8);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: var(--brown-dark, #2C1810);
+}
+
+.tagRemoveBtn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: var(--brown, #6B4226);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.tagRemoveBtn:hover {
+  opacity: 1;
+}
+
+.addTagRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.addTagRow .formInput {
+  flex: 1;
+}
+
+.addTagBtn {
+  padding: 0.45rem 0.9rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--brown-light, #A67C52);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.addTagBtn:hover {
+  opacity: 0.85;
+}
+
+/* ─── Save section button ────────────────────────────────── */
+
+.saveSectionBtn {
+  width: 100%;
+  padding: 0.65rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--brown-dark, #2C1810);
+  color: var(--cream, #F7F1EB);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: opacity 0.15s;
+}
+
+.saveSectionBtn:hover {
+  opacity: 0.88;
+}
+
+.saveSectionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.savedMsg {
+  text-align: center;
+  color: #3a8a4a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+/* ─── Feature row ────────────────────────────────────────── */
+
+.featureRow {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  align-items: center;
+}
+
+.featureRow .formInput {
+  flex: 1;
+}
+
+.featureRemoveBtn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: var(--cream, #F7F1EB);
+  border-radius: 50%;
+  font-size: 1rem;
+  color: var(--brown, #6B4226);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.featureRemoveBtn:hover {
+  background: var(--cream-dark, #EDE4D8);
+}
+
+/* ─── Sub-section ────────────────────────────────────────── */
+
+.subSection {
+  margin-bottom: 1.25rem;
+}
+
+.subSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--brown, #6B4226);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--cream-dark, #EDE4D8);
+}
+
+/* ─── Login (reuse same pattern) ─────────────────────────── */
+
+.loginPage {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--cream, #F7F1EB);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loginCard {
+  background: #fff;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+.loginTitle {
+  font-family: var(--font-heading, serif);
+  font-size: 1.5rem;
+  color: var(--brown-dark, #2C1810);
+  margin-bottom: 0.5rem;
+}
+
+.loginSubtitle {
+  font-size: 0.88rem;
+  color: var(--gray, #888);
+  margin-bottom: 1.5rem;
+}
+
+.loginError {
+  color: #c44;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.loginInput {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--cream-dark, #EDE4D8);
+  border-radius: 6px;
+  font-size: 0.92rem;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.loginInput:focus {
+  outline: none;
+  border-color: var(--brown-light, #A67C52);
+}
+
+.loginBtn {
+  width: 100%;
+  padding: 0.65rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--brown-dark, #2C1810);
+  color: var(--cream, #F7F1EB);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loginBtn:disabled {
+  opacity: 0.5;
+}
+
+.loading {
+  color: var(--gray, #888);
+  text-align: center;
+  padding: 3rem;
+}
