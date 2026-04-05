@@ -227,33 +227,28 @@ Return ONLY the JSON object, no markdown, no explanation.`
   }
 }
 
-// ─── Image enhancement ──────────────────────────────────────────
+// ─── Image download (no AI) ──────────────────────────────────────
 
 async function enhanceImages(imageUrls: string[], refererUrl: string): Promise<string[]> {
   const results: string[] = []
 
   for (const imgUrl of imageUrls) {
     try {
-      // Download
       const imgRes = await fetch(imgUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': refererUrl },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Referer': refererUrl,
+        },
       })
       if (!imgRes.ok) continue
       const buffer = Buffer.from(await imgRes.arrayBuffer())
       if (buffer.length < 5000) continue
 
-      // Enhance with Gemini
-      let finalBuffer: Uint8Array = buffer
-      if (process.env.GEMINI_API_KEY) {
-        const enhanced = await recreateCleanImage(buffer)
-        if (enhanced) finalBuffer = enhanced
-      }
-
-      // Upload to Supabase
-      const fileName = `product-${Date.now()}-${Math.random().toString(36).slice(2)}.png`
+      const ext = imgUrl.includes('.png') ? 'png' : 'jpg'
+      const fileName = `product-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
       const { error } = await supabase.storage
         .from('product-images')
-        .upload(fileName, finalBuffer, { contentType: 'image/png', upsert: true })
+        .upload(fileName, buffer, { contentType: ext === 'png' ? 'image/png' : 'image/jpeg', upsert: true })
 
       if (!error) {
         const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
@@ -262,41 +257,9 @@ async function enhanceImages(imageUrls: string[], refererUrl: string): Promise<s
     } catch {
       continue
     }
-
-    // Rate limit
-    await new Promise(r => setTimeout(r, 2000))
   }
 
   return results
-}
-
-async function recreateCleanImage(imageBuffer: Buffer): Promise<Buffer | null> {
-  try {
-    const base64 = imageBuffer.toString('base64')
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${process.env.GEMINI_API_KEY}`
-
-    const res = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [
-          { text: 'Look at this product photo. Generate a new, clean, professional product photography image of the SAME product. Clean white background, professional studio lighting, no text, no logos, no watermarks, no branding, no labels. Just the physical product beautifully photographed. High quality commercial product photography.' },
-          { inline_data: { mime_type: 'image/jpeg', data: base64 } },
-        ] }],
-        generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
-      }),
-    })
-
-    if (!res.ok) return null
-    const data = await res.json()
-    const imagePart = data.candidates?.[0]?.content?.parts?.find((p: { inlineData?: { data: string } }) => p.inlineData)
-    if (imagePart?.inlineData?.data) {
-      return Buffer.from(imagePart.inlineData.data, 'base64')
-    }
-    return null
-  } catch {
-    return null
-  }
 }
 
 // ─── Extract images from Alibaba HTML ───────────────────────────
