@@ -387,6 +387,65 @@
   cursor: not-allowed;
 }
 
+.generateSection {
+  margin-top: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--cream) 0%, var(--cream-dark) 100%);
+  border: 1px solid var(--cream-dark);
+}
+
+.generateTitle {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--brown);
+  margin-bottom: 10px;
+}
+
+.generateInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--cream-dark);
+  background: var(--white);
+  font-size: 12px;
+  font-family: var(--font-body);
+  color: var(--black);
+  outline: none;
+  resize: vertical;
+  min-height: 70px;
+  margin-bottom: 8px;
+}
+
+.generateInput:focus {
+  border-color: var(--brown-light);
+}
+
+.generateBtn {
+  padding: 10px 24px;
+  background: var(--brown-dark);
+  color: var(--cream);
+  border: none;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.generateBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.generateHint {
+  font-size: 10px;
+  color: var(--brown-light);
+  margin-top: 8px;
+  font-style: italic;
+}
+
 .uploadArea {
   border: 2px dashed var(--cream-dark);
   padding: 24px;

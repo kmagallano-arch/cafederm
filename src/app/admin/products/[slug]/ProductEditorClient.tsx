@@ -256,6 +256,8 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
   const [enhancingIndex, setEnhancingIndex] = useState<number | null>(null)
   const [enhancePrompt, setEnhancePrompt] = useState('')
   const [showEnhancePrompt, setShowEnhancePrompt] = useState<number | null>(null)
+  const [generatePrompt, setGeneratePrompt] = useState('')
+  const [generating, setGenerating] = useState(false)
 
   async function enhanceImage(index: number) {
     const url = images[index]
@@ -280,6 +282,39 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
       alert('Enhancement failed — try again')
     }
     setEnhancingIndex(null)
+  }
+
+  // Generate new image based on product details + existing images
+  async function generateNewImage() {
+    setGenerating(true)
+    try {
+      const referenceImage = images.length > 0 ? images[0] : null
+      const productContext = `Product: ${name}. Description: ${description}. Category: ${category}.`
+      const prompt = generatePrompt
+        ? `${generatePrompt}. Context: ${productContext}`
+        : `Generate a professional product photography image for a skincare product called "${name}" by CafeDerm. ${description}. Clean white background, luxury aesthetic, high quality commercial photography. No text on the image.`
+
+      const res = await fetch('/api/admin/enhance-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: referenceImage || undefined,
+          prompt,
+          generateNew: !referenceImage,
+        }),
+        signal: AbortSignal.timeout(120000),
+      })
+      const data = await res.json()
+      if (data.enhancedUrl) {
+        setImages(prev => [...prev, data.enhancedUrl])
+        setGeneratePrompt('')
+      } else if (data.error) {
+        alert(`Generation failed: ${data.error}`)
+      }
+    } catch {
+      alert('Generation failed — try again')
+    }
+    setGenerating(false)
   }
 
   // Key benefits helpers
@@ -879,6 +914,30 @@ export default function ProductEditorClient({ slug }: { slug: string }) {
                 onChange={handleFileSelect}
                 style={{ display: 'none' }}
               />
+
+              {/* Generate new image with AI */}
+              <div className={styles.generateSection}>
+                <div className={styles.generateTitle}>Generate New Image with AI</div>
+                <textarea
+                  className={styles.generateInput}
+                  placeholder={`Describe the image you want, e.g. "CafeDerm serum bottle with coffee beans on marble surface" or "Before and after skin comparison" or "Product being applied to face"`}
+                  value={generatePrompt}
+                  onChange={e => setGeneratePrompt(e.target.value)}
+                  rows={3}
+                />
+                <button
+                  className={styles.generateBtn}
+                  onClick={generateNewImage}
+                  disabled={generating}
+                >
+                  {generating ? 'Generating...' : '✨ Generate Image'}
+                </button>
+                {images.length > 0 && (
+                  <p className={styles.generateHint}>
+                    Uses the first uploaded image as reference for style consistency
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
